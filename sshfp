@@ -1,10 +1,7 @@
 #!/usr/bin/python
-# convert ~/.ssh/known_hosts entries to SSHFP (RFC-4255) DNS records
-# Copyright by Paul Wouters <paul@xelerance.com> and Jake Appelbaum
-# <jacob@appelbaum.net>
+# convert SSH public keys to DNS (rfc4255) SSHFP records using known_hosts or ssh-keyscan
+# Copyright by Paul Wouters <paul@xelerance.com> and Jake Appelbaum <jacob@appelbaum.net>
 # License: GNU GENERAL PUBLIC LICENSE Version 2
-#
-# you need to yum/apt-get install python-dns
 
 import os
 import sys
@@ -34,25 +31,13 @@ global quiet
 
 def usage():
 
-	print "NAME\n	sshfp - convert SSH's public keys to DNS SSHFP records."
-	print "SYNOPSIS\n	sshfp -k [ knownhosts_file ] [ [-a] | [ host1 host2 ... ] ] [-t]"
-	print "SYNOPSIS\n	sshfp -d [ domainname [ host1 host2 .. ] ] | [-a] [-t] [@ns]"
-	print "OPTIONS"
-	print "	-a,  --all\n		Convert all knownhosts entries or A records in zone to SSHFP records"
-	print "	-k,  --knownhosts\n	Take public keys from a known_hosts file"
-	print "				Location of knownhosts file (default: ~/.ssh/known_hosts)"
-	print "	-s,  --scan\n		Take public keys by scanning the hosts directly."
-	print "				Note that this uses DNS, and is vulnerable to a MITM attack unless DNSSEC is used"
-	print "	-o,  --output\n		Write output to filename"
-	print "	-t,  --trailing-dot\n	Add a trailing dot to the hostname in the SSHFP records"
-	print "	-q,  --quiet\n		Ignore all warnings from ssh-keyscan"
-	print "	-h,  --help\n		This message"
-	print "	-v,  --version\n	Display version number"
-	print "DESCRIPTION\n	sshfp converts SSH's public keys to DNS SSHFP records. sshfp can take"
-	print "	public keys from a knownhosts file or from the host's sshd daemon."
-	print "EXAMPLES"
-	print "		sshfp -k ~paul/.ssh/knownhosts -a -t"
-	print "		sshfp -s -a xelerance.com @ns0.xelerance.net"
+	print "usage: sshfp -k [ knownhosts_file ] [ [-a] | host1 [host2 ... ] ] [-t]"
+	print "       sshfp -s [ [-a domainname] | host1 [host2 .. ] ] [-t] [@ns]"
+	print "examples:"
+	print "          sshfp -k www.xelerance.com"
+	print "          sshfp -k ~paul/.ssh/knownhosts -a "
+	print "          sshfp -s www.openswan.org"
+	print "          sshfp -s -t -a xelerance.com @ns0.xelerance.net"
 
 def create_sshfp(hostname,keytype,keyblob):
 	global trailing
