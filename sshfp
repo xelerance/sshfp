@@ -106,9 +106,9 @@ def processRaw(entries,wantedHosts):
 	else:
 		return 0
 
-def getNSrecord(domain):
+def getRecord(domain,type):
 	try:
-		answers = dns.resolver.query(domain, 'NS')
+		answers = dns.resolver.query(domain, type)
 	except dns.resolver.NXDOMAIN:
 		#print "NXdomain: "+domain
 		return 0
@@ -117,7 +117,13 @@ def getNSrecord(domain):
 		return 0
 	for rdata in answers:
 		# just return first entry we got, answers[0].target does not work
-        	return str(rdata.target)
+		if type == "A":
+			return rdata
+        	if type == "NS":
+			return str(rdata.target)
+		else:
+			print "error in getRecord, unknown type "+type
+			sys.exit()
 
 def getAXFRrecord(domain,ns):
 	try:
@@ -131,7 +137,7 @@ def sshfpFromAXFR(domain,nameserver):
 	if domain[-1] == " ":
 		domain = domain[:-1]
 	if not nameserver:
-		nameserver = getNSrecord(domain)
+		nameserver = getrecord(domain,"NS")
 		if not nameserver:
 			print "warning: no NS record found for domain "+domain+". trying as host record instead"
 			# better then nothing
@@ -233,14 +239,14 @@ def main(argv=None):
 				if os.path.isfile(a):
 					khfile = a 
 				else:
-					nsrec =  getNSrecord(a)
-					if nsrec:
-						# it's really a hostname argument, not a file.
+					arec =  getRecord(a,"A")
+					if arec:
+						# it's really a hostname argument, not a known_hosts file.
 						args.append(a)
 						khfile = "~/.ssh/known_hosts"
 						
 					else:
-						# no file no daemon, prob an arg mistaken as option
+						# no file and no domain, prob an arg mistaken as option
 						if a[0]=="-":
 							opts.append(a)
 							khfile = "~/.ssh/known_hosts"
