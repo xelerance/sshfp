@@ -1,6 +1,6 @@
 Summary: sshfp can generate SSHFP dns records from knownhosts files or DNS.
 Name: sshfp
-Version: 1.0.5
+Version: 1.0.6
 Release: 1%{?dist}
 License: GPL
 Url:  ftp://ftp.xelerance.com/%{name}/
