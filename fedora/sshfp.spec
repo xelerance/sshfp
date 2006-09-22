@@ -28,6 +28,7 @@ install -d 0755 ${RPM_BUILD_ROOT}%{_bindir}
 install -d 0755 ${RPM_BUILD_ROOT}%{_mandir}/man1
 install -m 0755 sshfp ${RPM_BUILD_ROOT}%{_bindir}
 install -m 0644 sshfp.1 ${RPM_BUILD_ROOT}%{_mandir}/man1/
+gzip ${RPM_BUILD_ROOT}%{_mandir}/man1/sshfp.1
 
 %post
 if [ -e /etc/ssh/ssh_config ]; then
@@ -48,5 +49,5 @@ rm -rf ${RPM_BUILD_ROOT}
 %doc %{_mandir}/man1/*
 
 %changelog
-* Tue Sep 19 2006 Paul Wouters <paul@xelerance.com> - 1.0.3
-- Initial release
+* Tue Sep 19 2006 Paul Wouters <paul@xelerance.com> - 1.0.6
+- Initial release for Fedora Extras
