@@ -35,7 +35,7 @@ def usage():
 	print "       sshfp -s [ [-a domainname] | host1 [host2 .. ] ] [-t] [@ns]"
 	print "examples:"
 	print "          sshfp -k www.xelerance.com"
-	print "          sshfp -k ~paul/.ssh/knownhosts -a "
+	print "          sshfp -k ~paul/.ssh/known_hosts -a "
 	print "          sshfp -s www.openswan.org"
 	print "          sshfp -s -t -a xelerance.com @ns0.xelerance.net"
 
