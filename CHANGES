@@ -5,6 +5,7 @@ v1.0.5
 - changed -d/--dns and -f/--knownhosts to -s/--scan and -k/--knownhosts [hugh daniel]
 - add timestamp in named.conf comment syntax to axfr unless -q/--quiet is used. [paul]
 - exclude localhost from AXFR since it leaks information about the host that ran sshfp [paul]
+- moved files into git repository. anonymous git access at http://git.xelerance.com/
 
 v1.0.4
 - fixed option parsing [paul]
