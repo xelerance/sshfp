@@ -1,0 +1,336 @@
+#!/usr/bin/python
+# convert ~/.ssh/known_hosts entries to SSHFP (RFC-4255) DNS records
+# Copyright by Paul Wouters <paul@xelerance.com> and Jake Appelbaum
+# <jacob@appelbaum.net>
+# License: GNU GENERAL PUBLIC LICENSE Version 2
+#
+# you need to yum/apt-get install python-dns
+
+import os
+import sys
+import getopt
+import base64
+import sha
+import commands
+import time
+# www.dnspython.org
+try:
+	import dns.resolver
+	import dns.query
+	import dns.zone
+except:
+	print "sshfp requires the python-dns package from http://www.pythondns.org/"
+	print "Fedora: yum install python-dns"
+	print "Debian: apt-get install python-dnspython   (NOT python-dns!)"
+	sys.exit()
+
+global all_hosts
+global khfile
+global version
+global hostnames
+global trailing
+global nameserver
+global quiet
+
+def usage():
+
+	print "NAME\n	sshfp - convert SSH's public keys to DNS SSHFP records."
+	print "SYNOPSIS\n	sshfp -k [ knownhosts_file ] [ [-a] | [ host1 host2 ... ] ] [-t]"
+	print "SYNOPSIS\n	sshfp -d [ domainname [ host1 host2 .. ] ] | [-a] [-t] [@ns]"
+	print "OPTIONS"
+	print "	-a,  --all\n		Convert all knownhosts entries or A records in zone to SSHFP records"
+	print "	-k,  --knownhosts\n	Take public keys from a known_hosts file"
+	print "				Location of knownhosts file (default: ~/.ssh/known_hosts)"
+	print "	-s,  --scan\n		Take public keys by scanning the hosts directly."
+	print "				Note that this uses DNS, and is vulnerable to a MITM attack unless DNSSEC is used"
+	print "	-o,  --output\n		Write output to filename"
+	print "	-t,  --trailing-dot\n	Add a trailing dot to the hostname in the SSHFP records"
+	print "	-q,  --quiet\n		Ignore all warnings from ssh-keyscan"
+	print "	-h,  --help\n		This message"
+	print "	-v,  --version\n	Display version number"
+	print "DESCRIPTION\n	sshfp converts SSH's public keys to DNS SSHFP records. sshfp can take"
+	print "	public keys from a knownhosts file or from the host's sshd daemon."
+	print "EXAMPLES"
+	print "		sshfp -k ~paul/.ssh/knownhosts -a -t"
+	print "		sshfp -s -a xelerance.com @ns0.xelerance.net"
+
+def create_sshfp(hostname,keytype,keyblob):
+	global trailing
+	if keytype == "ssh-rsa":
+		keytype = "1"
+	else:
+		if keytype == "ssh-dss":
+			keytype = "2"
+		else:
+			return ""
+	try:
+		rawkey = base64.b64decode(keyblob)
+	except TypeError:
+		print "FAILED on hostname "+hostname+" with keyblob "+keyblob
+		return "ERROR"
+	fpsha1 = sha.new(keyblob).hexdigest()
+	# check for Reverse entries
+	reverse = 1
+	parts = hostname.split(".",3)
+	if parts[0] != hostname:
+		for octet in parts:
+			if not octet.isdigit():
+				reverse = 0
+		if reverse:
+			hostname = parts[3] + "." + parts[2] + "." + parts[1] + "." + parts[0] + ".in-addr.arpa."
+	# we don't know wether we need a trailing dot :(
+	# eg if someone did "ssh ns.foo" we don't know if this really is "ns.foo." or "ns.foo" plus resolv.conf domainname
+	if trailing and not reverse:
+		if hostname[-1:] != ".":
+			hostname = hostname + "."
+	return hostname + " IN SSHFP " + keytype + " 1 " + fpsha1
+
+def sshfpFromFile(khfile,wantedHosts):
+	# ok, let's do it
+	known_hosts = os.path.expanduser(khfile)
+	try:
+		khfp = open(known_hosts)
+	except IOError:
+		print "Failed to open file "+ known_hosts
+		sys.exit()
+	entries = khfp.read()
+	khfp.close()
+	return processRaw(entries,wantedHosts)
+
+def processRaw(entries,wantedHosts):
+	allrecords = []
+	for line in entries.split("\n"):
+		if line != "" and line[0] != "#" and line !="\n":
+			records = line.split(" ")
+			hosts = records[0].split(",")
+			for hostname in hosts:
+				if all_hosts or hostname in wantedHosts:
+					try:
+						keytype = records[1]
+						key64blob = records[2]
+					except IndexError:
+						# must be a better way to say, ignore.
+						if 0:
+							print "bogus entr for line:"+line
+					else:
+						record = create_sshfp(hostname,keytype,key64blob)
+						if record:
+							allrecords.append(record)
+	if allrecords != []:
+		return "\n".join(allrecords)
+	else:
+		return 0
+
+def getNSrecord(domain):
+	try:
+		answers = dns.resolver.query(domain, 'NS')
+	except dns.resolver.NXDOMAIN:
+		#print "NXdomain: "+domain
+		return 0
+	except dns.resolver.NoAnswer:
+		#print "NoAnswer: "+domain
+		return 0
+	for rdata in answers:
+		# just return first entry we got, answers[0].target does not work
+        	return str(rdata.target)
+
+def getAXFRrecord(domain,ns):
+	try:
+		zone = dns.zone.from_xfr(dns.query.xfr(ns,domain))
+	except dns.exception.FormError:
+		raise dns.exception.FormError, domain
+	else:
+		return  zone
+
+def sshfpFromAXFR(domain,nameserver):
+	if domain[-1] == " ":
+		domain = domain[:-1]
+	if not nameserver:
+		nameserver = getNSrecord(domain)
+		if not nameserver:
+			print "warning: no NS record found for domain "+domain+". trying as host record instead"
+			# better then nothing
+			return sshfpFromDNS(domain)
+	hosts = ""
+	#print "nameserver:" + str(ns)
+	try:
+		# print "trying axfr for "+domain+"@"+nameserver
+		axfr = getAXFRrecord(domain,nameserver)
+	except dns.exception.FormError, badDomain:
+		print "AXFR error:", nameserver, "No permission or not authorative for ", badDomain,"; aborting"
+		sys.exit()
+
+	for (name, ttl, rdata) in axfr.iterate_rdatas('A'):
+		#print "name:" +str(name) +", ttl:"+ str(ttl)+ ", rdata:"+str(rdata)
+		if "@" in str(name): 
+			hosts = hosts + " " + domain + "."
+		else:
+			if not str(name) == "localhost":
+				hosts = hosts + " " + str(name) + "." + domain + "."
+	return sshfpFromDNS(hosts)
+
+def sshfpFromDNS(hosts):
+	global quiet
+	if hosts[-1] == " ":
+		hosts = hosts[:-1]
+	cmd = "ssh-keyscan -T 5 -t dsa,rsa "+hosts
+	if quiet:
+		cmd = cmd + " 2>/dev/null"
+	tochild, fromchild, childerror = os.popen3(cmd, 'r')
+        err = childerror.readlines()
+        khdns = "\n".join(fromchild.readlines())
+        for e in err:
+                if e[0] != "#":
+                        print >>sys.stderr, e
+	return processRaw(khdns,hosts)
+	
+def main(argv=None):
+	global all_hosts
+	global trailing
+	global nameserver
+	global quiet
+
+	if argv is None:
+		argv = sys.argv
+	try:
+		opts, args = getopt.getopt(argv[1:], "qahtvso:k:", ["quiet","all:","help","trailing-dot","version","scan","output","knownhosts:"])
+	except getopt.error, msg:
+		#print >>sys.stderr, err.msg
+		print >>sys.stderr, "ERROR parsing options"
+		usage()
+		sys.exit(2) 
+
+	# parse options
+	khfile = ""
+	dodns = 0
+	dofile = 0
+	nameserver = ""
+	domain = ""
+	output = ""
+	quiet = 0
+	version = "1.0.5"
+	data = ""
+	trailing = 0
+	all_hosts = 0
+	hostnames = ()
+	#if not opts and not args:
+	#	usage()
+	#	sys.exit()
+
+	for o, a in opts:
+		if o in ("-v", "--version"):
+			print "sshfp version: "+version
+			print "Authors: Paul Wouters <paul@xelerance.com> and Jake Appelbaum <jacob@appelbaum.net>"
+			print "Source : ftp://ftp.xelerance.com/sshfp/"
+			sys.exit()
+		if o in ("-h", "--help"):
+			usage()
+			sys.exit()
+		if o in ("-t", "--trailling-dot"):
+			trailing = 1
+		if o in ("-q", "--quiet"):
+			quiet = 1
+		if o in ("-a", "--all"):
+			all_hosts = 1
+			if a:
+				domain = a
+		if o in ("-o", "--output"):
+			if not a:
+				print "error: no output file specified"
+			else:
+				output = a
+		if o in ("-k", "--knownhosts"):
+			dofile = 1
+			# optional arguments dont work cleanly in python??
+			if not a:
+				khfile = "~/.ssh/known_hosts"
+			else:
+				if os.path.isfile(a):
+					khfile = a 
+				else:
+					nsrec =  getNSrecord(a)
+					if nsrec:
+						# it's really a hostname argument, not a file.
+						args.append(a)
+						khfile = "~/.ssh/known_hosts"
+						
+					else:
+						# no file no daemon, prob an arg mistaken as option
+						if a[0]=="-":
+							opts.append(a)
+							khfile = "~/.ssh/known_hosts"
+						else:
+							print "error: file not found: "+a
+							sys.exit()
+
+		if o in ("-s", "--scan"):
+			dodns = 1
+			# add any args to -d as arguments
+			# currently not possible in getopts call
+			if (a):
+				args.append(a)
+
+		# print "DEBUG: opts"				
+		# print opts
+		# print "DEBUG: args"				
+		# print args
+
+	if (not dodns and not dofile):
+		if not args:
+			# use default
+			all_hosts = 1
+			dofile = 1
+			trailing = 1
+			if not khfile:
+				khfile = "~/.ssh/known_hosts"
+		else:
+			dodns = 1
+
+	if (dodns and dofile):
+			print "use either -k or -s"
+			usage()
+			sys.exit()
+		
+	if dodns:
+
+		# filter special case for using @nameserver
+		newargs = ""
+		for arg in args:
+			if arg != "":
+				if arg[0]=="@":
+					#print "found ns:"+arg[1:]
+					nameserver = arg[1:]
+					if not all_hosts:
+						print "WARNING: ssh-keyscan does not support @nameserver syntax, ignoring"
+				else:
+					newargs = newargs + arg +" "
+		if not newargs:
+			print "error: No hostnames specified"
+			sys.exit()
+		if all_hosts:
+				data = sshfpFromAXFR(newargs,nameserver)
+				if not quiet:
+					data = ";\n; Generated by sshfp "+ version +" at "+ time.ctime() +"\n;\n" + data
+		else:
+			data = sshfpFromDNS(newargs)
+
+	if dofile:
+		data = sshfpFromFile(khfile,args)
+
+	if not data:
+		sys.exit()
+
+	if output:
+		try:
+			fp = open(output,"w")
+		except IOError:
+			print "error: can't open '"+output+"' for writing"
+			sys.exit()
+        	else:
+			fp.write(data)
+			fp.close()
+	else:
+		print data
+
+if __name__ == "__main__":
+	sys.exit(main())

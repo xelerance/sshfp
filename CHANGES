@@ -1,0 +1,22 @@
+
+v1.0.5
+- fixed Debian package pointer to be python-dnspython
+- fixed trailing dot for ORIGIN entry when AXFR is used
+- changed -d/--dns and -f/--knownhosts to -s/--scan and -k/--knownhosts [hugh daniel]
+- add timestamp in named.conf comment syntax to axfr unless -q/--quiet is used. [paul]
+- exclude localhost from AXFR since it leaks information about the host that ran sshfp [paul]
+
+v1.0.4
+- fixed option parsing [paul]
+- hardened dns failures [patrick naubert]
+
+v1.0.3
+- public release of sshfp
+- added fedora spec file for packaging
+
+v1.0.1
+- renamed knownhosts2sshfp to sshfp since it no longer reflects the function [paul]
+- added ssh-keyscan option on suggestion of Jake Appelbaum [paul]
+
+v1.0.0
+- internal initial release

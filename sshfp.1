@@ -1,0 +1,87 @@
+NAME
+        sshfp - convert SSH's public keys to DNS (rfc4255) SSHFP records.
+
+SYNOPSIS
+	sshfp [-at] [-f [knownhosts_file]] | -d domain_name ] [ hostname1 hostname2 ... ] [@ns]
+
+DESCRIPTION
+
+sshfp generates RFC4255 SSHFP DNS records based on the public keys stores in a
+known_hosts file or obtained from DNS. If the domain allows for AXFR transfers, an
+entire domain can be processed for A records to convert.
+
+OPTIONS
+
+	-f,  --file <known_hosts file> 
+		Get public keys from file
+		Location of known_hosts file (default: ~/.ssh/known_hosts)
+	-d,  --dns <domain | host>
+		Get public keys from DNS
+		Domain name to query records from
+
+	-a,  --all
+		Convert all known_hosts entries to SSHFP records, or
+		Convert all A records of the domain using AXFR
+
+	-t,  --trailing-dot
+		Add a trailing dot to the hostname in the SSHFP records
+
+	-h,  --help
+		This message
+
+	-v,  --version
+		Display version number
+
+	-o, --output
+		Write output to file instead of stdout
+
+EXAMPLES
+		sshfp -a -t
+		sshfp -f /tmp/known_hosts bofh.xelerance.com www.openswan.org
+		sshfp -a -t -d xelerance.com @ns0.xelerance.net
+
+ISSUES
+
+  FQDN
+  When using non-FQDN names (eg 'www' instead of 'www.xelerance.com'), either
+  with ssh or sshfp can result in confusion or inconsistent records if the
+  resolving behaviour changes, such as by modifying /etc/resolv.conf. 
+
+
+  Trailing dot
+  It is not possible to determine whether a known_hosts or dns query is a
+  FQDN or not (unless -d domainname -a is used, in which case a trailing
+  dot is always appended). However, one can edit the output and either append
+  the domainname or a dot if needed.
+
+  Obtained SSHFP records can be hand-edited to append the domain suffix if necessary.
+
+SEE ALSO
+	ssh(1), ssh-keyscan(1), rfc4255
+
+TODO
+	Write a verify mode where we check:
+	- If the SSHFP record matches the actual host key
+	- If the SSHFP record matches the known_hosts entry
+	- if the known_hosts entry matches the actual host key
+
+HISTORY
+	sshfp was originally written by Xelerance to harvest, generate and populate
+	SSHFP records in their DNSSEC secured zonefiles.
+
+AUTHORS
+	Paul Wouters <paul@xelerance.com>
+
+COPYRIGHT
+       Copyright © 2006 Xelerance Corporation
+
+This program is free software; you can redistribute it and/or modify it
+under the terms of the GNU General Public License as published by the
+Free Software Foundation; either version 2 of the License, or (at your
+option) any later version.  See <http://www.fsf.org/copyleft/gpl.txt>.
+
+This program is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General
+Public License (file COPYING in the distribution) for more details.
+
