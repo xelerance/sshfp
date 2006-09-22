@@ -11,10 +11,10 @@ Requires: python-dns, openssh-clients >= 4
 BuildArch: noarch
 
 %description
-shfp converts SSH's public keys to DNS SSHFP records. sshfp can take
-public keys from a knownhosts file or from the host's sshd daemon. ssh
-can use these SSHFP records if you set "VerifyHostKeyDNS yes" in the
-file /etc/ssh/ssh_config. I have not managed to convince RedHat to
+sshfp generates DNS SSHFP records from SSH public keys. sshfp can take
+public keys from a knownhosts file or from scanning the host's sshd daemon.
+The ssh client can use these SSHFP records if you set "VerifyHostKeyDNS yes"
+in the file /etc/ssh/ssh_config. I have not managed to convince RedHat to
 enable this per default. This package enables VerifyHostKeyDNS.
 
 %prep
@@ -49,5 +49,5 @@ rm -rf ${RPM_BUILD_ROOT}
 %doc %{_mandir}/man1/*
 
 %changelog
-* Tue Sep 19 2006 Paul Wouters <paul@xelerance.com> - 1.0.6
+* Tue Sep 19 2006 Paul Wouters <paul@xelerance.com> - 1.0.6-1
 - Initial release for Fedora Extras
