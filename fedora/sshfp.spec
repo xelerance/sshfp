@@ -43,7 +43,7 @@ rm -rf ${RPM_BUILD_ROOT}
 
 %files 
 %defattr(-,root,root)
-%doc README COPYING
+%doc BUGS CHANGES README COPYING
 %{_bindir}/*
 %doc %{_mandir}/man1/*
 
