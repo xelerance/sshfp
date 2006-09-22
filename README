@@ -68,6 +68,8 @@ BUGS
    if a domain contains non-working glue A records, then ssh-keyscan aborts
    instead of skipping the single broken entry.
 
+   There is no facility to lookup hashed hostnames in known_hosts files
+
 EXAMPLES
 
    typical usage:
@@ -76,10 +78,15 @@ EXAMPLES
 
    sshfp -a -t (implies -k)
 
+   sshfp -k bofh.xelerance.com (from known_hosts)
+
+   sshfp -s bofh.xelerance.com (from a scan to the host)
+
    sshfp -k ~paul/.ssh/known_hosts bofh.xelerance.com [7]www.openswan.org -o
    /tmp/mysshfp.txt
 
-   sshfp -a -t -d xelerance.com @ns0.xelerance.net
+   sshfp     -a     -t    -d    xelerance.com    @ns0.xelerance.net    >>
+   /var/named/primary/xelerance.com
 
 SEE ALSO
 
@@ -92,7 +99,7 @@ AUTHORS
 
 COPYRIGHT
 
-   Copyright (C) 2006 Xelerance Corporation
+   Copyright Â© 2006 Xelerance Corporation
 
    This program is free software; you can redistribute it and/or modify it
    under the terms of the GNU General Public License as published by the Free

@@ -59,6 +59,8 @@ Debian: apt-get install python-dnspython
 .SH "BUGS"
 .LP 
 if a domain contains non\-working glue A records, then ssh\-keyscan aborts instead of skipping the single broken entry.
+.LP 
+There is no facility to lookup hashed hostnames in known_hosts files
 .SH "EXAMPLES"
 typical usage:
 .LP 
@@ -66,9 +68,13 @@ sshfp (implies \-k \-a)
 .LP 
 sshfp \-a \-t (implies \-k)
 .LP 
+sshfp \-k bofh.xelerance.com (from known_hosts)
+.LP
+sshfp \-s bofh.xelerance.com (from a scan to the host)
+.LP 
 sshfp \-k ~paul/.ssh/known_hosts bofh.xelerance.com www.openswan.org \-o /tmp/mysshfp.txt
 .LP 
-sshfp \-a \-t \-d xelerance.com @ns0.xelerance.net
+sshfp \-a \-t \-d xelerance.com @ns0.xelerance.net >> /var/named/primary/xelerance.com
 .SH "SEE ALSO"
 .LP 
 ssh\-keyscan(1) ssh(1) and RFC\-4255

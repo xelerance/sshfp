@@ -251,7 +251,7 @@ def main(argv=None):
 							opts.append(a)
 							khfile = "~/.ssh/known_hosts"
 						else:
-							print "error: file not found: "+a
+							print "error: "+a+" is neither a known_hosts file or hostname"
 							sys.exit()
 
 		if o in ("-s", "--scan"):
