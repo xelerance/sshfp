@@ -1,3 +1,5 @@
+v1.0.6
+- Added man page
 
 v1.0.5
 - Fixed Debian package pointer to be python-dnspython
@@ -7,7 +9,6 @@ v1.0.5
 - Exclude localhost from AXFR since it leaks information about the host that ran sshfp [paul]
 - Moved files into git repository. anonymous git access at http://git.xelerance.com/
 - Fix "sshfp -k hostname" where hostname is not a domainname's A record.
-- Added man page
 
 v1.0.4
 - Fixed option parsing [paul]
