@@ -30,15 +30,6 @@ install -m 0755 sshfp ${RPM_BUILD_ROOT}%{_bindir}
 install -m 0644 sshfp.1 ${RPM_BUILD_ROOT}%{_mandir}/man1/
 gzip ${RPM_BUILD_ROOT}%{_mandir}/man1/sshfp.1
 
-%post
-if [ -e /etc/ssh/ssh_config ]; then
-        grep VerifyHostKeyDNS /etc/ssh/ssh_config > /dev/null
-        RETVAL=$?
-        if [ $RETVAL -ne 0 ]; then
-                echo 'VerifyHostKeyDNS        yes' >> /etc/ssh/ssh_config
-        fi
-fi
-
 %clean
 rm -rf ${RPM_BUILD_ROOT}
 
@@ -49,5 +40,8 @@ rm -rf ${RPM_BUILD_ROOT}
 %doc %{_mandir}/man1/*
 
 %changelog
+* Mon Sep 25 2006 Paul Wouters <paul@xelerance.com> - 1.0.6-2
+- Don't change VerifyHostKeyDNS in /etc/ssh/ssh_config anymore
+
 * Tue Sep 19 2006 Paul Wouters <paul@xelerance.com> - 1.0.6-1
 - Initial release for Fedora Extras
