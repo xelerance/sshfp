@@ -1,7 +1,7 @@
 Summary: Generate SSHFP DNS records from knownhosts files or ssh-keyscan
 Name: sshfp
-Version: 1.0.6
-Release: 2%{?dist}
+Version: 1.1.0
+Release: 1%{?dist}
 License: GPL
 Url:  ftp://ftp.xelerance.com/%{name}/
 Source: ftp://ftp.xelerance.com/%{name}/%{name}-%{version}.tar.gz
@@ -40,6 +40,10 @@ rm -rf ${RPM_BUILD_ROOT}
 %doc %{_mandir}/man1/*
 
 %changelog
+* Tue Sep 26 2006 Paul Wouters <paul@xelerance.com> - 1.1.0-1
+- Mistakingly ran the sha1() call on the uuencoded keyblob, which
+  generated wrong SSHFP records.
+
 * Mon Sep 25 2006 Paul Wouters <paul@xelerance.com> - 1.0.6-2
 - Don't change VerifyHostKeyDNS in /etc/ssh/ssh_config anymore
 

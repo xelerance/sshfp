@@ -53,7 +53,7 @@ def create_sshfp(hostname,keytype,keyblob):
 	except TypeError:
 		print "FAILED on hostname "+hostname+" with keyblob "+keyblob
 		return "ERROR"
-	fpsha1 = sha.new(keyblob).hexdigest()
+	fpsha1 = sha.new(rawkey).hexdigest()
 	# check for Reverse entries
 	reverse = 1
 	parts = hostname.split(".",3)
@@ -199,7 +199,7 @@ def main(argv=None):
 	domain = ""
 	output = ""
 	quiet = 0
-	version = "1.0.6"
+	version = "1.1.0"
 	data = ""
 	trailing = 0
 	all_hosts = 0
