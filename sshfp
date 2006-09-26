@@ -229,7 +229,8 @@ def main(argv=None):
 			if not a:
 				print "error: no output file specified"
 			else:
-				output = a
+				# dnssigner wants a newline at EOF
+				output = a +"\n"
 		if o in ("-k", "--knownhosts"):
 			dofile = 1
 			# optional arguments dont work cleanly in python??
