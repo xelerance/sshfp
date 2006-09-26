@@ -1,6 +1,7 @@
 #!/usr/bin/python
-# convert SSH public keys to DNS (rfc4255) SSHFP records using known_hosts or ssh-keyscan
-# Copyright by Paul Wouters <paul@xelerance.com> and Jake Appelbaum <jacob@appelbaum.net>
+# Generate SSHFP DNS records (RFC4255) from knownhosts files or ssh-keyscan
+# Copyright by:
+# Paul Wouters <paul@xelerance.com> and Jake Appelbaum <jacob@appelbaum.net>
 # License: GNU GENERAL PUBLIC LICENSE Version 2
 
 import os
@@ -211,7 +212,7 @@ def main(argv=None):
 	for o, a in opts:
 		if o in ("-v", "--version"):
 			print "sshfp version: "+version
-			print "Authors: Paul Wouters <paul@xelerance.com> and Jake Appelbaum <jacob@appelbaum.net>"
+			print "Authors:\n Paul Wouters <paul@xelerance.com>\n Jake Appelbaum <jacob@appelbaum.net>"
 			print "Source : ftp://ftp.xelerance.com/sshfp/"
 			sys.exit()
 		if o in ("-h", "--help"):
