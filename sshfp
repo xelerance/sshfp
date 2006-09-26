@@ -137,7 +137,7 @@ def sshfpFromAXFR(domain,nameserver):
 	if domain[-1] == " ":
 		domain = domain[:-1]
 	if not nameserver:
-		nameserver = getrecord(domain,"NS")
+		nameserver = getRecord(domain,"NS")
 		if not nameserver:
 			print "warning: no NS record found for domain "+domain+". trying as host record instead"
 			# better then nothing
