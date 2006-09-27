@@ -3,6 +3,9 @@ KNOWN BUGS:
 20060927
 - sshfp -a xelerance.com -o 1 @ns1.xelerance.com gives:
   AXFR error: ns1.xelerance.com No permission or not authorative for  xelerance.com -o 1 ; aborting
+- CNAME's are probably not processed for sshfp records.
+- Running sshfp against the same nameserver twice using -a @ns0 gives different output all the
+  time. Looks like ssh-keyscan is sensitive to failures.
 
 20060921:
 - if a zone contains non-working glue A records, then ssh-keyscan aborts. Bug reported upstream
