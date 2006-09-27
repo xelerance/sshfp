@@ -232,6 +232,8 @@ def main(argv=None):
 			if not a:
 				print "error: no output file specified"
 				sys.exit()
+			else:
+				output = a
 		if o in ("-k", "--knownhosts"):
 			dofile = 1
 			# optional arguments dont work cleanly in python??
