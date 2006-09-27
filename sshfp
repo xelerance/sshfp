@@ -103,7 +103,8 @@ def processRaw(entries,wantedHosts):
 						if record:
 							allrecords.append(record)
 	if allrecords != []:
-		return "\n".join(allrecords)
+		# join records, dnssigner wants a newline at end of file, so add one.
+		return "\n".join(allrecords)+"\n"
 	else:
 		return 0
 
@@ -229,9 +230,7 @@ def main(argv=None):
 		if o in ("-o", "--output"):
 			if not a:
 				print "error: no output file specified"
-			else:
-				# dnssigner wants a newline at EOF
-				output = a +"\n"
+				sys.exit()
 		if o in ("-k", "--knownhosts"):
 			dofile = 1
 			# optional arguments dont work cleanly in python??
