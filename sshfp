@@ -103,8 +103,9 @@ def processRaw(entries,wantedHosts):
 						if record:
 							allrecords.append(record)
 	if allrecords != []:
+		allrecords.sort()
 		# join records, dnssigner wants a newline at end of file, so add one.
-		return "\n".join(allrecords.sort())+"\n"
+		return "\n".join(allrecords)+"\n"
 	else:
 		return 0
 
