@@ -14,8 +14,8 @@ BuildArch: noarch
 sshfp generates DNS SSHFP records from SSH public keys. sshfp can take
 public keys from a knownhosts file or from scanning the host's sshd daemon.
 The ssh client can use these SSHFP records if you set "VerifyHostKeyDNS yes"
-in the file /etc/ssh/ssh_config. I have not managed to convince RedHat to
-enable this per default. This package enables VerifyHostKeyDNS.
+in the file /etc/ssh/ssh_config.
+enable this per default.
 
 %prep
 %setup -q 
