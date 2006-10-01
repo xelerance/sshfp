@@ -9,4 +9,5 @@ KNOWN BUGS:
 20060921:
 - if a zone contains non-working glue A records, then ssh-keyscan aborts. Bug reported upstream
 
-
+FEATURE reqeust:
+- some mode (-V) that verifies all keys in knownhosts file and compares them with a scan
