@@ -32,13 +32,13 @@ global quiet
 
 def usage():
 
-	print "usage: sshfp -k [ knownhosts_file ] [ [-a] | host1 [host2 ... ] ] [-t]"
-	print "       sshfp -s [ [-a domainname] | host1 [host2 .. ] ] [-t] [@ns]"
+	print "usage: sshfp -k [-t] [ knownhosts_file ] [-o output] [ [-a] | host1 [host2 ... ] ]"
+	print "       sshfp -s [-t] [ [-a domainname] [-o output] | host1 [host2 .. ] ] [@ns]"
 	print "examples:"
 	print "          sshfp -k www.xelerance.com"
 	print "          sshfp -k ~paul/.ssh/known_hosts -a "
 	print "          sshfp -s www.openswan.org"
-	print "          sshfp -s -t -a xelerance.com @ns0.xelerance.net"
+	print "          sshfp -s -t -a -o sshfp.txt xelerance.com @ns0.xelerance.net"
 
 def create_sshfp(hostname,keytype,keyblob):
 	global trailing
