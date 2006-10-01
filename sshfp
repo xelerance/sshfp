@@ -139,6 +139,9 @@ def getAXFRrecord(domain,ns):
 def sshfpFromAXFR(domain,nameserver):
 	if domain[-1] == " ":
 		domain = domain[:-1]
+	if " " in domain:
+		print "error: space in domain can't be right, aborted"
+		sys.exit()
 	if not nameserver:
 		nameserver = getRecord(domain,"NS")
 		if not nameserver:
