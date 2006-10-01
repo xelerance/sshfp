@@ -140,7 +140,7 @@ def sshfpFromAXFR(domain,nameserver):
 	if domain[-1] == " ":
 		domain = domain[:-1]
 	if " " in domain:
-		print "error: space in domain can't be right, aborted"
+		print "error: space in domain '"+domain+"' can't be right, aborted"
 		sys.exit()
 	if not nameserver:
 		nameserver = getRecord(domain,"NS")
@@ -263,7 +263,7 @@ def main(argv=None):
 
 		if o in ("-s", "--scan"):
 			dodns = 1
-			# add any args to -d as arguments
+			# add any args to -s as arguments
 			# currently not possible in getopts call
 			if (a):
 				args.append(a)
@@ -291,7 +291,7 @@ def main(argv=None):
 		
 	if dodns:
 
-		# filter special case for using @nameserver
+		# filter special case for using @nameserver, verify for misinterpreted options as args
 		newargs = ""
 		for arg in args:
 			if arg != "":
@@ -302,6 +302,10 @@ def main(argv=None):
 						print "WARNING: ssh-keyscan does not support @nameserver syntax, ignoring"
 				else:
 					newargs = newargs + arg +" "
+				if arg[0]=="-":
+					# shit, misinterpreted option as argument. We'll try to be more clever in the future.
+					usage()
+					sys.exit()
 		if not newargs:
 			print "error: No hostnames specified"
 			sys.exit()
