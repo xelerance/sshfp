@@ -154,7 +154,7 @@ def sshfpFromAXFR(domain,nameserver):
 		# print "trying axfr for "+domain+"@"+nameserver
 		axfr = getAXFRrecord(domain,nameserver)
 	except dns.exception.FormError, badDomain:
-		print "AXFR error:", nameserver, "No permission or not authorative for ", badDomain,"; aborting"
+		print "AXFR error: " + nameserver + " - No permission or not authorative for " + badDomain + "; aborting"
 		sys.exit()
 
 	for (name, ttl, rdata) in axfr.iterate_rdatas('A'):
