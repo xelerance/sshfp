@@ -255,8 +255,15 @@ def main(argv=None):
 					else:
 						# no file and no domain, prob an arg mistaken as option
 						if a[0]=="-":
-							opts.append(a)
 							khfile = "~/.ssh/known_hosts"
+							opts.append(a)
+							# I guess we can't append opts for processing within
+							# the loop. Guess we need to exec a new sshfp or refactor.
+							# catch most commonly used options, eg "sshfp -k -a"
+							if a == "-a":
+								all_hosts = 1
+							if a == "-t":
+								trailing = 1
 						else:
 							print "error: "+a+" is neither a known_hosts file or hostname"
 							sys.exit()
