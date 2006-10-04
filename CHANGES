@@ -1,3 +1,7 @@
+v1.1.1
+- Ignore hashed hostname entries in known_hosts files
+- Fix "sshfp -k -a"
+
 v1.1.0
 - All SSHFP records were created badly using a sha1() on the uuencoded
   keyblow instead of the raw uudecoded keyblob.
