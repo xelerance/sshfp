@@ -1,8 +1,14 @@
 KNOWN BUGS:
 
+20061004
+- using opts.append(x) does not work, as x is never appended to the current
+  loop. This means the whole option processing needs to become re-entrant
+  after fixing an argument. yuck.
+
 20060927
 - sshfp -a xelerance.com -o 1 @ns1.xelerance.com gives:
   AXFR error: ns1.xelerance.com No permission or not authorative for  xelerance.com -o 1 ; aborting
+  workaround for now: return usage() and let them change order of arguments. 
 - Running sshfp against the same nameserver twice using -a @ns0 gives different output all the
   time. Looks like ssh-keyscan is sensitive to failures.
 
