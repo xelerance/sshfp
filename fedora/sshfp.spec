@@ -1,6 +1,6 @@
 Summary: Generate SSHFP DNS records from knownhosts files or ssh-keyscan
 Name: sshfp
-Version: 1.1.0
+Version: 1.1.1
 Release: 1%{?dist}
 License: GPL
 Url:  ftp://ftp.xelerance.com/%{name}/
@@ -40,6 +40,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %doc %{_mandir}/man1/*
 
 %changelog
+* Wed Oct  4 2006 Paul Wouters <paul@xelerance.com> - 1.1.1-1
+- Upgraded to 1.1.1
+
 * Tue Sep 26 2006 Paul Wouters <paul@xelerance.com> - 1.1.0-1
 - Mistakingly ran the sha1() call on the uuencoded keyblob, which
   generated wrong SSHFP records.
