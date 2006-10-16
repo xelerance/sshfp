@@ -1,5 +1,8 @@
 KNOWN BUGS:
 
+20061016
+= Scanning in-addr.arpa for PTR records to add sshfp records is missing.
+
 20061004
 - using opts.append(x) does not work, as x is never appended to the current
   loop. This means the whole option processing needs to become re-entrant
