@@ -1,7 +1,10 @@
 KNOWN BUGS:
 
+20061101
+- IPv6 untested and might not work at all.
+
 20061016
-= Scanning in-addr.arpa for PTR records to add sshfp records is missing.
+- Scanning in-addr.arpa for PTR records to add sshfp records is missing.
 
 20061004
 - using opts.append(x) does not work, as x is never appended to the current

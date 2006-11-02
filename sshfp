@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # Generate SSHFP DNS records (RFC4255) from knownhosts files or ssh-keyscan
-# Copyright by:
+# Copyright by Xelerance http://www.xelerance.com/
 # Paul Wouters <paul@xelerance.com> and Jake Appelbaum <jacob@appelbaum.net>
 # License: GNU GENERAL PUBLIC LICENSE Version 2
 
@@ -218,7 +218,7 @@ def main(argv=None):
 		if o in ("-v", "--version"):
 			print "sshfp version: "+version
 			print "Authors:\n Paul Wouters <paul@xelerance.com>\n Jake Appelbaum <jacob@appelbaum.net>"
-			print "Source : ftp://ftp.xelerance.com/sshfp/"
+			print "Source : http://www.xelerance.com/software/sshfp/"
 			sys.exit()
 		if o in ("-h", "--help"):
 			usage()

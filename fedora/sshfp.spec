@@ -3,7 +3,7 @@ Name: sshfp
 Version: 1.1.1
 Release: 1%{?dist}
 License: GPL
-Url:  ftp://ftp.xelerance.com/%{name}/
+Url:  http://www.xelerance.com/software/%{name}/
 Source: ftp://ftp.xelerance.com/%{name}/%{name}-%{version}.tar.gz
 Group: Applications/Internet
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
