@@ -1,0 +1,7 @@
+sshfp (1.1.1) unstable; urgency=low
+
+  * Initial Release.
+  * Rewrite of manual page in proper groff.
+  * Creation of basic top level Makefile
+
+ -- Jacob Appelbaum <jacob@appelbaum.net>  Fri,  2 Feb 2007 05:11:58 +0100

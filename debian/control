@@ -1,0 +1,13 @@
+Source: sshfp
+Section: net
+Priority: optional
+Maintainer: Jacob Appelbaum <jacob@appelbaum.net>
+Build-Depends: debhelper (>= 4.0.0)
+Standards-Version: 3.6.1
+
+Package: sshfp
+Architecture: all
+Depends: ${shlibs:Depends}, ${misc:Depends}, python, python-dns, ssh
+Description: generates RFC4255 SSHFP DNS records
+ sshfp generates RFC4255 SSHFP DNS records based on the public keys 
+ as stored in a known_hosts file or as obtained from ssh servers directly.
