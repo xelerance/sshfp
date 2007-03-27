@@ -5,8 +5,8 @@ sshfp
 
 SYNTAX
 
-   sshfp [-k [ knownhosts_file ]] [-a] | [ <hostname1> [hostname2 ...]]
-   sshfp -s [ -a <domain> ] | [<hostname1> [hostname2 ...]] [@ns]
+   sshfp [-k [knownhosts_file]] [-a] | [<hostname1> [hostname2 ...]]
+   sshfp -s [-p port] <-a <domain> [@ns] | <hostname1> [hostname2 ...]>
 
 DESCRIPTION
 
@@ -44,6 +44,9 @@ OPTIONS
           trailing dots.
    -o / --output <filename>
           Write to filename instead of stdout
+   -p / --port <portnumber>
+          Use <portnumber> for scanning. Note that portnumbers do NOT appear
+          in SSHFP records.
    -h / --help
           Output help information and exit.
    -v / --version

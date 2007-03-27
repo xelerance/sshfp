@@ -1,10 +1,11 @@
 v1.1.2
 - Added -p port option - Patch by andrew@lewman.com
-- Fixed getopt order
+- Added Debian package [jacob]
+- Fixed getopt order [paul]
 
 v1.1.1
-- Ignore hashed hostname entries in known_hosts files
-- Fix "sshfp -k -a"
+- Ignore hashed hostname entries in known_hosts files [paul]
+- Fix "sshfp -k -a" [paul]
 
 v1.1.0
 - All SSHFP records were created badly using a sha1() on the uuencoded

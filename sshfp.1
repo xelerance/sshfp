@@ -6,7 +6,7 @@ Generate SSHFP DNS records from knownhosts files or ssh-keyscan
 .LP 
 sshfp [\fI\-k\fP [\fIknownhosts_file\fP]] [\fI\-a\fP] | [<\fIhost1\fP> [\fIhost2 ...]\fP]
 .br 
-sshfp \fI\-s\fP [\fI\-p\fP <\fIport\fP>] [\fI\-a\fP <\fIdomain\fP>] | [<\fIhost1\fP> [\fIhost2 ...\fP] [\fI@ns\fP]
+sshfp \fI\-s\fP [\fI\-p\fP <\fIport\fP>] <\fI\-a\fP <\fIdomain\fP> [\fI@ns\fP] | <\fIhost1\fP> [\fIhost2 ...\fP] >
 .SH "DESCRIPTION"
 .LP 
 sshfp generates RFC4255 SSHFP DNS records based on the public keys
@@ -40,6 +40,9 @@ sshfp can also just be manually editted for trailing dots.
 .TP 
 \fB\-o / \-\-output\fR <\fIfilename\fP>
 Write to filename instead of stdout
+.TP
+\fB\-p / \-\-port\fR <\fIportnumber\fP> 
+Use portnumber for scanning. Note that portnumbers do NOT appear in SSHFP records.
 .TP 
 \fB\-h / \-\-help\fR
 Output help information and exit.
