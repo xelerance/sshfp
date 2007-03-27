@@ -2,6 +2,7 @@ v1.1.2
 - Added -p port option - Patch by andrew@lewman.com
 - Added Debian package [jacob]
 - Fixed getopt order [paul]
+- Added a mailinglist: http://lists.xelerance.com/mailman/listinfo/sshfp/
 
 v1.1.1
 - Ignore hashed hostname entries in known_hosts files [paul]
