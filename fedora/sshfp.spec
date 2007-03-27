@@ -1,6 +1,6 @@
 Summary: Generate SSHFP DNS records from knownhosts files or ssh-keyscan
 Name: sshfp
-Version: 1.1.1
+Version: 1.1.2
 Release: 1%{?dist}
 License: GPL
 Url:  http://www.xelerance.com/software/%{name}/

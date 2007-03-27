@@ -29,15 +29,17 @@ global hostnames
 global trailing
 global nameserver
 global quiet
+global port
 
 def usage():
 
 	print "usage: sshfp -k [-t] [ knownhosts_file ] [-o output] [ [-a] | host1 [host2 ... ] ]"
-	print "       sshfp -s [-t] [ [-a domainname] [-o output] | host1 [host2 .. ] ] [@ns]"
+	print "       sshfp -s [-t] [ [-p port] [-a domainname] [-o output] | host1 [host2 .. ] ] [@ns]"
 	print "examples:"
 	print "          sshfp -k www.xelerance.com"
 	print "          sshfp -k ~paul/.ssh/known_hosts -a "
 	print "          sshfp -s www.openswan.org"
+	print "          sshfp -s -p 2222 xelerance.com"
 	print "          sshfp -s -t -a -o sshfp.txt xelerance.com @ns0.xelerance.net"
 
 def create_sshfp(hostname,keytype,keyblob):
@@ -168,9 +170,10 @@ def sshfpFromAXFR(domain,nameserver):
 
 def sshfpFromDNS(hosts):
 	global quiet
+	global port
 	if hosts[-1] == " ":
 		hosts = hosts[:-1]
-	cmd = "ssh-keyscan -T 5 -t dsa,rsa "+hosts
+	cmd = "ssh-keyscan -p %s -T 5 -t dsa,rsa %s" % (port, hosts)
 	if quiet:
 		cmd = cmd + " 2>/dev/null"
 	tochild, fromchild, childerror = os.popen3(cmd, 'r')
@@ -186,11 +189,12 @@ def main(argv=None):
 	global trailing
 	global nameserver
 	global quiet
+	global port
 
 	if argv is None:
 		argv = sys.argv
 	try:
-		opts, args = getopt.getopt(argv[1:], "qahtvso:k:", ["quiet","all:","help","trailing-dot","version","scan","output","knownhosts:"])
+		opts, args = getopt.getopt(argv[1:], "qhtvsa:o:k:p:", ["quiet","help","trailing-dot","version","scan","all:","output:","knownhosts:", "port:"])
 	except getopt.error, msg:
 		#print >>sys.stderr, err.msg
 		print >>sys.stderr, "ERROR parsing options"
@@ -205,10 +209,11 @@ def main(argv=None):
 	domain = ""
 	output = ""
 	quiet = 0
-	version = "1.1.1"
+	version = "1.1.2"
 	data = ""
 	trailing = 0
 	all_hosts = 0
+	port = 22
 	hostnames = ()
 	#if not opts and not args:
 	#	usage()
@@ -227,6 +232,15 @@ def main(argv=None):
 			trailing = 1
 		if o in ("-q", "--quiet"):
 			quiet = 1
+		if o in ("-p", "--port"):
+			if a:
+				try:
+					port = int(a)
+					if not quiet and port <> 22:
+						print "WARNING: non-standard port numbers are not designated in SSHFP records"
+				except:
+					print "error: port must be a number"
+					sys.exit()
 		if o in ("-a", "--all"):
 			all_hosts = 1
 			if a:
