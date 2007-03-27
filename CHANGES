@@ -1,6 +1,6 @@
 v1.1.2
 - Added -p port option - Patch by andrew@lewman.com
-- Added Debian package [jacob]
+- Added Debian package [jacob] 'fakeroot debian/rules binary'
 - Fixed getopt order [paul]
 - Added a mailinglist: http://lists.xelerance.com/mailman/listinfo/sshfp/
 
