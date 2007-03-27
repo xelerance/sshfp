@@ -1,4 +1,4 @@
-sshfp (1.1.1) unstable; urgency=low
+sshfp (1.1.2) unstable; urgency=low
 
   * Initial Release.
   * Rewrite of manual page in proper groff.
