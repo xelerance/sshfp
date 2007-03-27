@@ -13,6 +13,6 @@ install:
         install -d $(MAN)
         install sshfp.1 $(MAN)
 clean:
-        -rm out
+        @echo Nothing to clean - This is a python script
 dist-clean:
         @echo Nothing to dist-clean - This is a python script
