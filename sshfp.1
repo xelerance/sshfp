@@ -4,9 +4,9 @@
 Generate SSHFP DNS records from knownhosts files or ssh-keyscan
 .SH "SYNTAX"
 .LP 
-sshfp [\fI\-k\fP [ \fIknownhosts_file\fP ]] [\fI\-a\fP] | [ <\fIhostname1\fP> [\fIhostname2 ...]\fP]
+sshfp [\fI\-k\fP [\fIknownhosts_file\fP]] [\fI\-a\fP] | [<\fIhost1\fP> [\fIhost2 ...]\fP]
 .br 
-sshfp \fI\-s\fP [ \fI\-a\fP <\fIdomain\fP> ] | [<\fIhostname1\fP> [\fIhostname2 ...]\fP] [\fI@ns\fP]
+sshfp \fI\-s\fP [\fI\-p\fP <\fIport\fP>] [\fI\-a\fP <\fIdomain\fP>] | [<\fIhost1\fP> [\fIhost2 ...\fP] [\fI@ns\fP]
 .SH "DESCRIPTION"
 .LP 
 sshfp generates RFC4255 SSHFP DNS records based on the public keys
