@@ -53,6 +53,7 @@ binary-arch: build install
 	dh_installchangelogs 
 	dh_installexamples
 	dh_installman
+	dh_installdocs
 	dh_compress
 	dh_python
 	dh_fixperms
