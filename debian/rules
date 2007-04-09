@@ -51,9 +51,9 @@ binary-arch: build install
 	dh_testdir
 	dh_testroot
 	dh_installchangelogs 
-	dh_installdocs BUGS CHANGES README
 	dh_installexamples
 	dh_installman
+	dh_installdocs
 	dh_compress
 	dh_python
 	dh_fixperms
