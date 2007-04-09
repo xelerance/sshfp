@@ -7,12 +7,14 @@
 BIN     = $(DESTDIR)/usr/bin
 MAN     = $(DESTDIR)/usr/share/man/man1
 
+all:
+	@echo Nothing to build - use make install instead
 install:
-        install -d $(BIN)
-        install sshfp $(BIN)
-        install -d $(MAN)
-        install sshfp.1 $(MAN)
+	install -d $(BIN)
+	install sshfp $(BIN)
+	install -d $(MAN)
+	install sshfp.1 $(MAN)
 clean:
-        -rm out
+	-rm out
 dist-clean:
-        @echo Nothing to dist-clean - This is a python script
+	@echo Nothing to dist-clean - This is a python script
