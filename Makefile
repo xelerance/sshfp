@@ -10,7 +10,6 @@ MAN     = $(DESTDIR)/usr/share/man/man1
 all:
 	@echo Nothing to build - use make install instead
 install:
-<<<<<<< master
 	install -d $(BIN)
 	install sshfp $(BIN)
 	install -d $(MAN)
