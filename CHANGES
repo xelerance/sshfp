@@ -1,3 +1,9 @@
+v1.1.3
+- Moved trailing-dot option from -t to -d
+- Added -t / --type <rsa|dsa>
+- Added -T / --timeout <secs>
+- Fixed printing of bogus blanc line at the end.
+
 v1.1.2
 - Added -p port option - Patch by andrew@lewman.com
 - Added Debian package [jacob] 'fakeroot debian/rules binary'

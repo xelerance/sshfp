@@ -1,6 +1,6 @@
 Summary: Generate RFC-4255 SSHFP DNS records from knownhosts files or ssh-keyscan
 Name: sshfp
-Version: 1.1.2
+Version: 1.1.3
 Release: 1%{?dist}
 License: GPL
 Url:  http://www.xelerance.com/software/%{name}/
@@ -39,6 +39,9 @@ rm -rf ${RPM_BUILD_ROOT}
 %doc %{_mandir}/man1/*
 
 %changelog
+* Thu Apr 19 2007 Paul Wouters <paul@xelerance.com> - 1.1.3-1
+- Upgraded to 1.1.3
+
 * Wed Oct  4 2006 Paul Wouters <paul@xelerance.com> - 1.1.1-1
 - Upgraded to 1.1.1
 
