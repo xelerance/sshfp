@@ -286,13 +286,13 @@ def main(argv=None):
 				if os.path.isfile(a):
 					khfile = a 
 				else:
-					arec =  getRecord(a,"A")
-					if arec:
-						# it's really a hostname argument, not a known_hosts file.
-						args.append(a)
-						khfile = "~/.ssh/known_hosts"
-						
-					else:
+					try:
+						arec =  getRecord(a,"A")
+						if arec:
+							# it's really a hostname argument, not a known_hosts file.
+							args.append(a)
+							khfile = "~/.ssh/known_hosts"
+					except:
 						# no file and no domain, prob an arg mistaken as option
 						if a[0]=="-":
 							khfile = "~/.ssh/known_hosts"
