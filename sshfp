@@ -33,14 +33,14 @@ global port
 
 def usage():
 
-	print "usage: sshfp -k [-t] [ knownhosts_file ] [-o output] [ [-a] | host1 [host2 ... ] ]"
-	print "       sshfp -s [-t] [ [-p port] [-a domainname] [-o output] | host1 [host2 .. ] ] [@ns]"
+	print "usage: sshfp -k [-d] [ knownhosts_file ] [-o output] [ [-a] | host1 [host2 ... ] ]"
+	print "       sshfp -s [-d] [ [-p port] [-a domainname] [-o output] | host1 [host2 .. ] ] [@ns]"
 	print "examples:"
 	print "          sshfp -k www.xelerance.com"
 	print "          sshfp -k ~paul/.ssh/known_hosts -a "
 	print "          sshfp -s www.openswan.org"
 	print "          sshfp -s -p 2222 xelerance.com"
-	print "          sshfp -s -t -a -o sshfp.txt xelerance.com @ns0.xelerance.net"
+	print "          sshfp -s -d -a -o sshfp.txt xelerance.com @ns0.xelerance.net"
 
 def create_sshfp(hostname,keytype,keyblob):
 	global trailing
@@ -194,7 +194,7 @@ def main(argv=None):
 	if argv is None:
 		argv = sys.argv
 	try:
-		opts, args = getopt.getopt(argv[1:], "qhtvsa:o:k:p:", ["quiet","help","trailing-dot","version","scan","all:","output:","knownhosts:", "port:"])
+		opts, args = getopt.getopt(argv[1:], "qhdvsa:o:k:p:", ["quiet","help","trailing-dot","version","scan","all:","output:","knownhosts:", "port:"])
 	except getopt.error, msg:
 		#print >>sys.stderr, err.msg
 		print >>sys.stderr, "ERROR parsing options"
@@ -228,7 +228,7 @@ def main(argv=None):
 		if o in ("-h", "--help"):
 			usage()
 			sys.exit()
-		if o in ("-t", "--trailling-dot"):
+		if o in ("-d", "--trailling-dot"):
 			trailing = 1
 		if o in ("-q", "--quiet"):
 			quiet = 1

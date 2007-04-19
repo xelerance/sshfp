@@ -1,4 +1,4 @@
-Summary: Generate SSHFP DNS records from knownhosts files or ssh-keyscan
+Summary: Generate RFC-4255 SSHFP DNS records from knownhosts files or ssh-keyscan
 Name: sshfp
 Version: 1.1.2
 Release: 1%{?dist}
@@ -14,7 +14,7 @@ BuildArch: noarch
 sshfp generates DNS SSHFP records from SSH public keys. sshfp can take
 public keys from a knownhosts file or from scanning the host's sshd daemon.
 The ssh client can use these SSHFP records if you set "VerifyHostKeyDNS yes"
-in the file /etc/ssh/ssh_config or in your .ssh/config
+in the file /etc/ssh/ssh_config or in your .ssh/config. See RFC-4255
 
 %prep
 %setup -q 

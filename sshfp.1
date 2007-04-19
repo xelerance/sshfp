@@ -4,9 +4,12 @@
 sshfp \- Generate SSHFP DNS records from knownhosts files or ssh-keyscan
 .SH "SYNTAX"
 .LP 
-sshfp [\fI\-k\fP [\fIknownhosts_file\fP]] [\fI\-a\fP] | [<\fIhost1\fP> [\fIhost2 ...]\fP]
+.Comment: verify usage line
+.Comment:        print "usage: sshfp -k [-d] [ knownhosts_file ] [-o output] [ [-a] | host1 [host2 ... ] ]"
+.Comment:        print "       sshfp -s [-d] [ [-p port] [-a domainname] [-o output] | host1 [host2 .. ] ] [@ns]"
+sshfp [\fI\-k\fP [\fIknownhosts_file\fP]] [\fI\-d\fP] [\fI\-a\fP] | [<\fIhost1\fP> [\fIhost2 ...]\fP]
 .br 
-sshfp \fI\-s\fP [\fI\-p\fP <\fIport\fP>] <\fI\-a\fP <\fIdomain\fP> [\fI@ns\fP] | <\fIhost1\fP> [\fIhost2 ...\fP] >
+sshfp \fI\-s\fP [\fI\-p\fP <\fIport\fP>] [\fI\-d\fP] <\fI\-a\fP <\fIdomain\fP> [\fI@ns\fP] | <\fIhost1\fP> [\fIhost2 ...\fP] >
 .SH "DESCRIPTION"
 .LP 
 sshfp generates RFC4255 SSHFP DNS records based on the public keys
@@ -27,14 +30,14 @@ Obtain public SSH keys from a known_hosts file. Defaults to using ~/.ssh/known_h
 \fB\-a / \-\-all\fR
 Scan all hosts in the known_hosts file when used with \-k. When used with \-s, it will attempt an zone transfer (AXFR) to obtain all A records in the domain specified.
 .TP 
-\fB\-t / \-\-trailing\-dot\fR
+\fB\-d / \-\-trailing\-dot\fR
 Add a trailing dot to the hostname in the SSHFP records.  It is not possible
 to determine whether a known_hosts or dns query is for a FQDN (eg www.xelerance.com)
 or not (eg www) or not (unless \-d domainname \-a is used, in which case a trailing dot
 is always appended). Non\-FQDN get their domainname appended through /etc/resolv.conf
 These non\-FQDN will happen when using a non\-FQDN (eg sshfp \-k www)
 or known_hosts entries obtained by running ssh www.sub where .domain.com is implied.
-When \-t is used, all hostnames not ending with a dot, that at least contain two parts
+When \-d is used, all hostnames not ending with a dot, that at least contain two parts
 in their hostname (eg www.sub but not www get a trailing dot. Note that the output of
 sshfp can also just be manually editted for trailing dots.
 .TP 
@@ -69,7 +72,7 @@ typical usage:
 .LP 
 sshfp (implies \-k \-a)
 .LP 
-sshfp \-a \-t (implies \-k)
+sshfp \-a \-d (implies \-k)
 .LP 
 sshfp \-k bofh.xelerance.com (from known_hosts)
 .LP
@@ -77,7 +80,7 @@ sshfp \-s bofh.xelerance.com (from a scan to the host)
 .LP 
 sshfp \-k ~paul/.ssh/known_hosts bofh.xelerance.com www.openswan.org \-o /tmp/mysshfp.txt
 .LP 
-sshfp \-a \-t \-d xelerance.com @ns0.xelerance.net >> /var/named/primary/xelerance.com
+sshfp \-a \-d \-d xelerance.com @ns0.xelerance.net >> /var/named/primary/xelerance.com
 .SH "SEE ALSO"
 .LP 
 ssh\-keyscan(1) ssh(1) and RFC\-4255
