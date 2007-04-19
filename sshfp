@@ -97,6 +97,8 @@ def processRaw(entries,wantedHosts):
 				if all_hosts or hostname in wantedHosts:
 					try:
 						keytype = records[1]
+						if keytype != "ssh-%s"%algo:
+							return
 						key64blob = records[2]
 					except IndexError:
 						# must be a better way to say, ignore.
