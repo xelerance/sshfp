@@ -379,7 +379,7 @@ def main(argv=None):
 			fp.write(data)
 			fp.close()
 	else:
-		print data
+		print data[:-1]
 
 if __name__ == "__main__":
 	sys.exit(main())
