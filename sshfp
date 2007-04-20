@@ -100,14 +100,11 @@ def processRaw(entries,wantedHosts):
 						if keytype != "ssh-%s"%algo:
 							return
 						key64blob = records[2]
-					except IndexError:
-						# must be a better way to say, ignore.
-						if 0:
-							print "bogus entr for line:"+line
-					else:
 						record = create_sshfp(hostname,keytype,key64blob)
 						if record:
 							allrecords.append(record)
+					except IndexError:
+						pass
 	if allrecords != []:
 		allrecords.sort()
 		# join records, dnssigner wants a newline at end of file, so add one.
