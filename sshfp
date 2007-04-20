@@ -89,6 +89,7 @@ def sshfpFromFile(khfile,wantedHosts):
 
 def processRaw(entries,wantedHosts):
 	global algo
+	global all_hosts
 	allrecords = []
 	for line in entries.split("\n"):
 		if line != "" and line[0] != "#" and line[0] != "|" and line !="\n":
@@ -98,7 +99,9 @@ def processRaw(entries,wantedHosts):
 				if all_hosts or (hostname in wantedHosts) or (hostname == wantedHosts):
 					try:
 						keytype = records[1]
-						if (algo != "dsa,rsa") and keytype != "ssh-%s"%algo:
+						# note that ssh-keyscan and known_hosts don't use the same string
+						# for all algos, eg ssh-dss vs -t dsa, match on all but last char 
+						if (algo != "dsa,rsa") and keytype[:-1] != "ssh-%s"%algo[:-1]:
 							return
 						key64blob = records[2]
 						record = create_sshfp(hostname,keytype,key64blob)
