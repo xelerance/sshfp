@@ -20,14 +20,12 @@ in the file /etc/ssh/ssh_config or in your .ssh/config. See RFC-4255
 %setup -q 
 
 %build
+make all
 
 %install
 rm -rf ${RPM_BUILD_ROOT}
-install -d 0755 ${RPM_BUILD_ROOT}%{_bindir} 
-install -d 0755 ${RPM_BUILD_ROOT}%{_mandir}/man1
-install -m 0755 sshfp ${RPM_BUILD_ROOT}%{_bindir}
-install -m 0644 sshfp.1 ${RPM_BUILD_ROOT}%{_mandir}/man1/
-gzip ${RPM_BUILD_ROOT}%{_mandir}/man1/sshfp.1
+export DESTDIR=${RPM_BUILD_ROOT}
+make install
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
