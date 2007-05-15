@@ -13,7 +13,7 @@ in the file /etc/ssh/ssh_config or ~/.ssh/config. See RFC-4255
 
 REQUIREMENTS
 
-sshfp requires python-dns ([6]http://www.pythondns.org)
+sshfp requires python-dns: http://www.pythondns.org
 
 See sshfp.1.txt for more details
 
