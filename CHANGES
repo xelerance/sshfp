@@ -3,6 +3,7 @@ v1.1.3
 - Added -t / --type <rsa|dsa>
 - Added -T / --timeout <secs>
 - Fixed printing of bogus blanc line at the end.
+- Use Makefile in Fedora spec file
 
 v1.1.2
 - Added -p port option - Patch by andrew@lewman.com
