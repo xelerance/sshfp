@@ -7,19 +7,21 @@ KNOWN BUGS:
 - Scanning in-addr.arpa for PTR records to add sshfp records is missing.
 
 20061004
-- using opts.append(x) does not work, as x is never appended to the current
+- Using opts.append(x) does not work, as x is never appended to the current
   loop. This means the whole option processing needs to become re-entrant
   after fixing an argument. yuck.
 
 20060927
-- sshfp -a xelerance.com -o 1 @ns1.xelerance.com gives:
-  AXFR error: ns1.xelerance.com No permission or not authorative for  xelerance.com -o 1 ; aborting
-  workaround for now: return usage() and let them change order of arguments. 
-- Running sshfp against the same nameserver twice using -a @ns0 gives different output all the
-  time. Looks like ssh-keyscan is sensitive to failures.
+- sshfp -a xelerance.com @ns1.xelerance.com does not work as expected.
+  
+- Running sshfp against the same nameserver twice using -a @ns0 gives
+  different output all the time. Looks like ssh-keyscan is sensitive
+  to failures.
 
 20060921:
-- if a zone contains non-working glue A records, then ssh-keyscan aborts. Bug reported upstream
+- If a zone contains non-working glue A records, then ssh-keyscan aborts.
+  Bug reported upstream http://bugzilla.mindrot.org/show_bug.cgi?id=1213
 
 FEATURE reqeust:
-- some mode (-V) that verifies all keys in knownhosts file and compares them with a scan
+- Some mode (-V) that verifies all keys in knownhosts file and compares
+  them with a scan
