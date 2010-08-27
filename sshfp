@@ -8,7 +8,6 @@ import os
 import sys
 import getopt
 import base64
-import sha
 import commands
 import time
 # www.dnspython.org
@@ -22,6 +21,14 @@ except:
 	print "Debian: apt-get install python-dnspython   (NOT python-dns!)"
 	sys.exit()
 
+try:
+	import hashlib
+	digest = hashlib.sha1
+except:
+	import sha
+	digest = sha.new
+
+
 global all_hosts
 global khfile
 global version
@@ -32,6 +39,12 @@ global quiet
 global port
 global timeout
 global algo
+
+try:
+	from subprocess import Popen, PIPE
+	use_subprocess = True
+except:
+	use_subprocess = False
 
 def usage():
 
@@ -58,7 +71,7 @@ def create_sshfp(hostname,keytype,keyblob):
 	except TypeError:
 		print "FAILED on hostname "+hostname+" with keyblob "+keyblob
 		return "ERROR"
-	fpsha1 = sha.new(rawkey).hexdigest()
+	fpsha1 = digest(rawkey).hexdigest()
 	# check for Reverse entries
 	reverse = 1
 	parts = hostname.split(".",3)
@@ -183,7 +196,14 @@ def sshfpFromDNS(hosts):
 	cmd = "ssh-keyscan -p %s -T %s -t %s %s" % (port, timeout, algo, hosts)
 	if quiet:
 		cmd = cmd + " 2>/dev/null"
-	tochild, fromchild, childerror = os.popen3(cmd, 'r')
+
+	if use_subprocess:
+		p = Popen(cmd, shell=True, stdin=PIPE, stdout=PIPE,
+			stderr=PIPE, close_fds=True)
+		tochild, fromchild, childerror = (p.stdin, p.stdout, p.stderr)
+	else:
+		tochild, fromchild, childerror = os.popen3(cmd, 'r')
+
         err = childerror.readlines()
         khdns = "\n".join(fromchild.readlines())
         for e in err:

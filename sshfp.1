@@ -4,9 +4,9 @@
 sshfp \- Generate SSHFP DNS records from knownhosts files or ssh-keyscan
 .SH "SYNTAX"
 .LP 
-.Comment: verify usage line
-.Comment:        print "usage: sshfp -k [-d] [ knownhosts_file ] [-o output] [ [-a] | host1 [host2 ... ] ]"
-.Comment:        print "       sshfp -s [-d] [ [-p port] [-a domainname] [-o output] | host1 [host2 .. ] ] [@ns]"
+.\"Comment: verify usage line
+.\"Comment:        print "usage: sshfp -k [-d] [ knownhosts_file ] [-o output] [ [-a] | host1 [host2 ... ] ]"
+.\"Comment:        print "       sshfp -s [-d] [ [-p port] [-a domainname] [-o output] | host1 [host2 .. ] ] [@ns]"
 sshfp [\fI\-k\fP [\fIknownhosts_file\fP]] [\fI\-d\fP] [\fI\-a\fP] | [<\fIhost1\fP> [\fIhost2 ...]\fP]
 .br 
 sshfp \fI\-s\fP [\fI\-p\fP <\fIport\fP>] [\fI\-d\fP] <\fI\-a\fP <\fIdomain\fP> [\fI@ns\fP] | <\fIhost1\fP> [\fIhost2 ...\fP] >
