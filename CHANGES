@@ -1,3 +1,8 @@
+v1.1.5
+- Fixes for https://bugs.launchpad.net/ubuntu/+source/sshfp/+bug/355886
+  Fix for sha Deprecation warning [Martin Jackson]
+  Fix for use of os.popen3 [Martin Jackson]
+
 v1.1.4
 - Fixes to man page [Maximiliano Curia]
 - Fixes to Makefile for Debian [Maximiliano Curia]

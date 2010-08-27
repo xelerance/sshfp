@@ -15,5 +15,3 @@ REQUIREMENTS
 
 sshfp requires python-dns: http://www.pythondns.org
 
-See sshfp.1.txt for more details
-
