@@ -142,7 +142,7 @@ def getRecord(domain, r_type):
 		# just return first entry we got, answers[0].target does not work
 		if r_type == "A":
 			return rdata
-        	if r_type == "NS":
+		if r_type == "NS":
 			return str(rdata.target)
 		else:
 			print "error in getRecord, unknown type "+r_type
@@ -200,11 +200,11 @@ def sshfpFromDNS(hosts):
 	else:
 		tochild, fromchild, childerror = os.popen3(cmd, 'r')
 
-        err = childerror.readlines()
-        khdns = "\n".join(fromchild.readlines())
-        for e in err:
-                if e[0] != "#":
-                        print >> sys.stderr, e
+	err = childerror.readlines()
+	khdns = "\n".join(fromchild.readlines())
+	for e in err:
+		if e[0] != "#":
+			print >> sys.stderr, e
 	return processRaw(khdns, hosts)
 	
 def main(argv=None):
@@ -393,7 +393,7 @@ def main(argv=None):
 		except IOError:
 			print "error: can't open '"+output+"' for writing"
 			sys.exit()
-        	else:
+		else:
 			fp.write(data)
 			fp.close()
 	else:
