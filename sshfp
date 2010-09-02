@@ -33,7 +33,6 @@ global khfile
 global version
 global hostnames
 global trailing
-global nameserver
 global quiet
 global port
 global timeout
@@ -207,7 +206,6 @@ def sshfpFromDNS(hosts):
 def main(argv=None):
 	global all_hosts
 	global trailing
-	global nameserver
 	global quiet
 	global port
 	global timeout
