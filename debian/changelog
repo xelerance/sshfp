@@ -1,14 +1,12 @@
-sshfp (1.1.3-1) unstable; urgency=low
+sshfp (1.1.5-1xelerance1) lucid; urgency=low
 
-  * Moved trailing-dot option from -t to -d
-  * Added -t / --type <rsa|dsa>
-  * Added -T / --timeout <secs>
-  * Fixed printing of bogus blanc line at the end.
+  * Update to 1.1.5
+  * Resync debian/ with Debian (thanks)
 
-sshfp (1.1.2) unstable; urgency=low
+  The real changelog is in /usr/share/doc/sshfp/changelog.gz
 
-  * Initial Release.
-  * Rewrite of manual page in proper groff.
-  * Creation of basic top level Makefile
+  This package is NOT an official Debian/Ubuntu package. Please do
+  not file any Debian/Ubuntu bug reports for this package but contact
+  <simon@xelerance.com> or <support@xelerance.com> if you have a problem.
 
- -- Jacob Appelbaum <jacob@appelbaum.net>  Fri,  2 Feb 2007 05:11:58 +0100
+ -- Simon Deziel <simon@xelerance.com>>  Mon, 30 Aug 2010 12:07:15 -0400
