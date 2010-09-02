@@ -1,13 +1,17 @@
 Source: sshfp
 Section: net
 Priority: optional
-Maintainer: Jacob Appelbaum <jacob@appelbaum.net>
-Build-Depends: debhelper (>= 4.0.0)
-Standards-Version: 3.6.1
+Maintainer: Simon Deziel <simon@xelerance.com>
+Build-Depends: debhelper (>= 7.0.50~), python-support (>= 0.5.3)
+Homepage: http://www.xelerance.com/software/sshfp/
+Standards-Version: 3.8.4
 
 Package: sshfp
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python, python-dns, ssh
-Description: generates RFC4255 SSHFP DNS records
- sshfp generates RFC4255 SSHFP DNS records based on the public keys 
- as stored in a known_hosts file or as obtained from ssh servers directly.
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python-dnspython, openssh-client
+XB-Python-Version: ${python:Versions}
+Description: Generate RFC-4255 SSHFP DNS records from knownhosts files or ssh-keyscan
+ sshfp generates DNS SSHFP records from SSH public keys. sshfp can take
+ public keys from a knownhosts file or from scanning the host's sshd daemon.
+ The ssh client can use these SSHFP records if you set "VerifyHostKeyDNS yes"
+ in the file /etc/ssh/ssh_config or in your .ssh/config. See RFC-4255
