@@ -106,7 +106,7 @@ def processRaw(entries, wantedHosts):
 	global all_hosts
 	allrecords = []
 	for line in entries.split("\n"):
-		if line != "" and line[0] != "#" and line[0] != "|" and line !="\n":
+		if line != "" and line[0] != "#" and line[0] != "|" and line != "\n":
 			records = line.split(" ")
 			hosts = records[0].split(", ")
 			for hostname in hosts:
@@ -209,7 +209,7 @@ def sshfpFromDNS(hosts):
         khdns = "\n".join(fromchild.readlines())
         for e in err:
                 if e[0] != "#":
-                        print >>sys.stderr, e
+                        print >> sys.stderr, e
 	return processRaw(khdns, hosts)
 	
 def main(argv=None):
@@ -226,8 +226,8 @@ def main(argv=None):
 	try:
 		opts, args = getopt.getopt(argv[1:], "qhdvsT:t:a:o:k:p:", ["quiet", "help", "trailing-dot", "version", "scan", "timeout:", "type:", "all:", "output:", "knownhosts:", "port:"])
 	except getopt.error, msg:
-		#print >>sys.stderr, err.msg
-		print >>sys.stderr, "ERROR parsing options"
+		#print >> sys.stderr, err.msg
+		print >> sys.stderr, "ERROR parsing options"
 		usage()
 		sys.exit(2) 
 
@@ -318,7 +318,7 @@ def main(argv=None):
 							khfile = "~/.ssh/known_hosts"
 					except:
 						# no file and no domain, prob an arg mistaken as option
-						if a[0]=="-":
+						if a[0] == "-":
 							khfile = "~/.ssh/known_hosts"
 							opts.append(a)
 							# I guess we can't append opts for processing within
@@ -366,14 +366,14 @@ def main(argv=None):
 		newargs = ""
 		for arg in args:
 			if arg != "":
-				if arg[0]=="@":
+				if arg[0] == "@":
 					#print "found ns:"+arg[1:]
 					nameserver = arg[1:]
 					if not all_hosts:
 						print "WARNING: ssh-keyscan does not support @nameserver syntax, ignoring"
 				else:
 					newargs = newargs + arg +" "
-				if arg[0]=="-":
+				if arg[0] == "-":
 					# shit, misinterpreted option as argument. We'll try to be more clever in the future.
 					usage()
 					sys.exit()
