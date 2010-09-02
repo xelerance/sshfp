@@ -14,7 +14,7 @@ try:
 	import dns.resolver
 	import dns.query
 	import dns.zone
-except:
+except ImportError:
 	print "sshfp requires the python-dns package from http://www.pythondns.org/"
 	print "Fedora: yum install python-dns"
 	print "Debian: apt-get install python-dnspython   (NOT python-dns!)"
@@ -23,7 +23,7 @@ except:
 try:
 	import hashlib
 	digest = hashlib.sha1
-except:
+except ImportError:
 	import sha
 	digest = sha.new
 
@@ -41,10 +41,11 @@ global algo
 try:
 	from subprocess import Popen, PIPE
 	use_subprocess = True
-except:
+except ImportError:
 	use_subprocess = False
 
 def usage():
+	"""Print usage information"""
 
 	print "usage: sshfp -k [-d] [-t algo] [-T timeout] [ knownhosts_file ] [-o output] [ [-a] | host1 [host2 ... ] ]"
 	print "       sshfp -s [-d] [-t algo] [-T timeout] [ [-p port] [-a domainname] [-o output] | host1 [host2 .. ] ] [@ns]"
@@ -56,6 +57,8 @@ def usage():
 	print "          sshfp -s -T 30 -t rsa -d -a -o sshfp.txt xelerance.com @ns0.xelerance.net"
 
 def create_sshfp(hostname, keytype, keyblob):
+	"""Creates an SSH fingerprint"""
+
 	if keytype == "ssh-rsa":
 		keytype = "1"
 	else:
@@ -86,6 +89,8 @@ def create_sshfp(hostname, keytype, keyblob):
 	return hostname + " IN SSHFP " + keytype + " 1 " + fpsha1
 
 def sshfpFromFile(khfile, wantedHosts):
+	"""Read information from known_hosts file"""
+
 	# ok, let's do it
 	known_hosts = os.path.expanduser(khfile)
 	try:
@@ -96,7 +101,6 @@ def sshfpFromFile(khfile, wantedHosts):
 	entries = khfp.read()
 	khfp.close()
 	return processRaw(entries, wantedHosts)
-
 
 def processRaw(entries, wantedHosts):
 	allrecords = []
