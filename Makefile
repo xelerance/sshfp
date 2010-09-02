@@ -20,7 +20,7 @@ man-page:
 	nroff -man sshfp.1 > sshfp.1.txt
 
 clean:
-	-rm sshfp.1.txt
+	-rm -f sshfp.1.txt
 
 dist-clean:
 	@echo Nothing to dist-clean - This is a python script
