@@ -8,7 +8,6 @@ import os
 import sys
 import getopt
 import base64
-import commands
 import time
 # www.dnspython.org
 try:
@@ -130,9 +129,9 @@ def processRaw(entries, wantedHosts):
 	else:
 		return 0
 
-def getRecord(domain, type):
+def getRecord(domain, r_type):
 	try:
-		answers = dns.resolver.query(domain, type)
+		answers = dns.resolver.query(domain, r_type)
 	except dns.resolver.NXDOMAIN:
 		#print "NXdomain: "+domain
 		return 0
@@ -141,12 +140,12 @@ def getRecord(domain, type):
 		return 0
 	for rdata in answers:
 		# just return first entry we got, answers[0].target does not work
-		if type == "A":
+		if r_type == "A":
 			return rdata
-        	if type == "NS":
+        	if r_type == "NS":
 			return str(rdata.target)
 		else:
-			print "error in getRecord, unknown type "+type
+			print "error in getRecord, unknown type "+r_type
 			sys.exit()
 
 def getAXFRrecord(domain, ns):
@@ -286,7 +285,7 @@ def main(argv=None):
 			if a:
 				try:
 					port = int(a)
-					if not quiet and port <> 22:
+					if not quiet and port != 22:
 						print "WARNING: non-standard port numbers are not designated in SSHFP records"
 				except:
 					print "error: port must be a number"
