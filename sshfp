@@ -57,7 +57,7 @@ def usage():
 	print "          sshfp -s -p 2222 xelerance.com"
 	print "          sshfp -s -T 30 -t rsa -d -a -o sshfp.txt xelerance.com @ns0.xelerance.net"
 
-def create_sshfp(hostname,keytype,keyblob):
+def create_sshfp(hostname, keytype, keyblob):
 	global trailing
 	if keytype == "ssh-rsa":
 		keytype = "1"
@@ -74,7 +74,7 @@ def create_sshfp(hostname,keytype,keyblob):
 	fpsha1 = digest(rawkey).hexdigest()
 	# check for Reverse entries
 	reverse = 1
-	parts = hostname.split(".",3)
+	parts = hostname.split(".", 3)
 	if parts[0] != hostname:
 		for octet in parts:
 			if not octet.isdigit():
@@ -88,7 +88,7 @@ def create_sshfp(hostname,keytype,keyblob):
 			hostname = hostname + "."
 	return hostname + " IN SSHFP " + keytype + " 1 " + fpsha1
 
-def sshfpFromFile(khfile,wantedHosts):
+def sshfpFromFile(khfile, wantedHosts):
 	# ok, let's do it
 	known_hosts = os.path.expanduser(khfile)
 	try:
@@ -98,26 +98,27 @@ def sshfpFromFile(khfile,wantedHosts):
 		sys.exit()
 	entries = khfp.read()
 	khfp.close()
-	return processRaw(entries,wantedHosts)
+	return processRaw(entries, wantedHosts)
 
-def processRaw(entries,wantedHosts):
+
+def processRaw(entries, wantedHosts):
 	global algo
 	global all_hosts
 	allrecords = []
 	for line in entries.split("\n"):
 		if line != "" and line[0] != "#" and line[0] != "|" and line !="\n":
 			records = line.split(" ")
-			hosts = records[0].split(",")
+			hosts = records[0].split(", ")
 			for hostname in hosts:
 				if all_hosts or (hostname in wantedHosts) or (hostname == wantedHosts):
 					try:
 						keytype = records[1]
 						# note that ssh-keyscan and known_hosts don't use the same string
 						# for all algos, eg ssh-dss vs -t dsa, match on all but last char 
-						if (algo != "dsa,rsa") and keytype[:-1] != "ssh-%s"%algo[:-1]:
+						if (algo != "dsa, rsa") and keytype[:-1] != "ssh-%s"%algo[:-1]:
 							return
 						key64blob = records[2]
-						record = create_sshfp(hostname,keytype,key64blob)
+						record = create_sshfp(hostname, keytype, key64blob)
 						if record:
 							allrecords.append(record)
 					except IndexError:
@@ -129,7 +130,7 @@ def processRaw(entries,wantedHosts):
 	else:
 		return 0
 
-def getRecord(domain,type):
+def getRecord(domain, type):
 	try:
 		answers = dns.resolver.query(domain, type)
 	except dns.resolver.NXDOMAIN:
@@ -148,22 +149,22 @@ def getRecord(domain,type):
 			print "error in getRecord, unknown type "+type
 			sys.exit()
 
-def getAXFRrecord(domain,ns):
+def getAXFRrecord(domain, ns):
 	try:
-		zone = dns.zone.from_xfr(dns.query.xfr(ns,domain))
+		zone = dns.zone.from_xfr(dns.query.xfr(ns, domain))
 	except dns.exception.FormError:
 		raise dns.exception.FormError, domain
 	else:
 		return  zone
 
-def sshfpFromAXFR(domain,nameserver):
+def sshfpFromAXFR(domain, nameserver):
 	if domain[-1] == " ":
 		domain = domain[:-1]
 	if " " in domain:
 		print "error: space in domain '"+domain+"' can't be right, aborted"
 		sys.exit()
 	if not nameserver:
-		nameserver = getRecord(domain,"NS")
+		nameserver = getRecord(domain, "NS")
 		if not nameserver:
 			print "warning: no NS record found for domain "+domain+". trying as host record instead"
 			# better then nothing
@@ -172,7 +173,7 @@ def sshfpFromAXFR(domain,nameserver):
 	#print "nameserver:" + str(ns)
 	try:
 		# print "trying axfr for "+domain+"@"+nameserver
-		axfr = getAXFRrecord(domain,nameserver)
+		axfr = getAXFRrecord(domain, nameserver)
 	except dns.exception.FormError, badDomain:
 		print "AXFR error: " + nameserver + " - No permission or not authorative for " + badDomain + "; aborting"
 		sys.exit()
@@ -209,7 +210,7 @@ def sshfpFromDNS(hosts):
         for e in err:
                 if e[0] != "#":
                         print >>sys.stderr, e
-	return processRaw(khdns,hosts)
+	return processRaw(khdns, hosts)
 	
 def main(argv=None):
 	global all_hosts
@@ -223,7 +224,7 @@ def main(argv=None):
 	if argv is None:
 		argv = sys.argv
 	try:
-		opts, args = getopt.getopt(argv[1:], "qhdvsT:t:a:o:k:p:", ["quiet","help","trailing-dot","version","scan","timeout:","type:","all:","output:","knownhosts:", "port:"])
+		opts, args = getopt.getopt(argv[1:], "qhdvsT:t:a:o:k:p:", ["quiet", "help", "trailing-dot", "version", "scan", "timeout:", "type:", "all:", "output:", "knownhosts:", "port:"])
 	except getopt.error, msg:
 		#print >>sys.stderr, err.msg
 		print >>sys.stderr, "ERROR parsing options"
@@ -242,7 +243,7 @@ def main(argv=None):
 	data = ""
 	trailing = 0
 	timeout = "5"
-	algo = "dsa,rsa"
+	algo = "dsa, rsa"
 	all_hosts = 0
 	port = 22
 	hostnames = ()
@@ -310,7 +311,7 @@ def main(argv=None):
 					khfile = a 
 				else:
 					try:
-						arec =  getRecord(a,"A")
+						arec =  getRecord(a, "A")
 						if arec:
 							# it's really a hostname argument, not a known_hosts file.
 							args.append(a)
@@ -380,21 +381,21 @@ def main(argv=None):
 			print "error: No hostnames specified"
 			sys.exit()
 		if all_hosts:
-				data = sshfpFromAXFR(newargs,nameserver)
+				data = sshfpFromAXFR(newargs, nameserver)
 				if not quiet:
 					data = ";\n; Generated by sshfp "+ version +" from " + nameserver + " at "+ time.ctime() +"\n;\n" + data
 		else:
 			data = sshfpFromDNS(newargs)
 
 	if dofile:
-		data = sshfpFromFile(khfile,args)
+		data = sshfpFromFile(khfile, args)
 
 	if not data:
 		sys.exit()
 
 	if output:
 		try:
-			fp = open(output,"w")
+			fp = open(output, "w")
 		except IOError:
 			print "error: can't open '"+output+"' for writing"
 			sys.exit()
