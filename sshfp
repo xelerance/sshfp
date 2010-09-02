@@ -57,7 +57,6 @@ def usage():
 	print "          sshfp -s -T 30 -t rsa -d -a -o sshfp.txt xelerance.com @ns0.xelerance.net"
 
 def create_sshfp(hostname, keytype, keyblob):
-	global trailing
 	if keytype == "ssh-rsa":
 		keytype = "1"
 	else:
@@ -101,8 +100,6 @@ def sshfpFromFile(khfile, wantedHosts):
 
 
 def processRaw(entries, wantedHosts):
-	global algo
-	global all_hosts
 	allrecords = []
 	for line in entries.split("\n"):
 		if line != "" and line[0] != "#" and line[0] != "|" and line != "\n":
@@ -187,12 +184,8 @@ def sshfpFromAXFR(domain, nameserver):
 	return sshfpFromDNS(hosts)
 
 def sshfpFromDNS(hosts):
-	global quiet
-	global port
 	if hosts[-1] == " ":
 		hosts = hosts[:-1]
-	global timeout
-	global algo
 	cmd = "ssh-keyscan -p %s -T %s -t %s %s" % (port, timeout, algo, hosts)
 	if quiet:
 		cmd = cmd + " 2>/dev/null"
