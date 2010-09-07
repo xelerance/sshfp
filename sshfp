@@ -107,14 +107,14 @@ def processRaw(entries, wantedHosts):
 	for line in entries.split("\n"):
 		if line != "" and line[0] != "#" and line[0] != "|" and line != "\n":
 			records = line.split(" ")
-			hosts = records[0].split(", ")
+			hosts = records[0].split(",")
 			for hostname in hosts:
 				if all_hosts or (hostname in wantedHosts) or (hostname == wantedHosts):
 					try:
 						keytype = records[1]
 						# note that ssh-keyscan and known_hosts don't use the same string
 						# for all algos, eg ssh-dss vs -t dsa, match on all but last char 
-						if (algo != "dsa, rsa") and keytype[:-1] != "ssh-%s"%algo[:-1]:
+						if (algo != "dsa,rsa") and keytype[:-1] != "ssh-%s"%algo[:-1]:
 							return
 						key64blob = records[2]
 						record = create_sshfp(hostname, keytype, key64blob)
@@ -237,7 +237,7 @@ def main(argv=None):
 	data = ""
 	trailing = 0
 	timeout = "5"
-	algo = "dsa, rsa"
+	algo = "dsa,rsa"
 	all_hosts = 0
 	port = 22
 	hostnames = ()
