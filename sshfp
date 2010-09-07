@@ -51,7 +51,7 @@ def usage():
 	print "       sshfp -s [-d] [-t algo] [-T timeout] [ [-p port] [-a domainname] [-o output] | host1 [host2 .. ] ] [@ns]"
 	print "examples:"
 	print "          sshfp -k www.xelerance.com"
-	print "          sshfp -k ~paul/.ssh/known_hosts -a "
+	print "          sshfp -k ~/.ssh/known_hosts -a"
 	print "          sshfp -s www.openswan.org"
 	print "          sshfp -s -p 2222 xelerance.com"
 	print "          sshfp -s -T 30 -t rsa -d -a -o sshfp.txt xelerance.com @ns0.xelerance.net"
