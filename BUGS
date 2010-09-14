@@ -1,5 +1,9 @@
 KNOWN BUGS:
 
+20100914
+- sshfp -k ~/.ssh/known_hosts -a does not work as expected, because of
+  internal confusion about -k requiring an argument or not (-k vs -s)
+
 20061101
 - IPv6 untested and might not work at all.
 
