@@ -39,7 +39,6 @@ global quiet
 global port
 global timeout
 global algo
-global axfr_udp
 
 VERSION = "1.1.6"
 DEFAULT_KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
@@ -199,7 +198,6 @@ def get_record(domain, qtype):
 			sys.exit(1)
 
 def get_axfr_record(domain, nameserver):
-	global axfr_udp
 	try:
 		zone = dns.zone.from_xfr(dns.query.xfr(nameserver, domain, rdtype=dns.rdatatype.AXFR))
 	except dns.exception.FormError:
@@ -255,7 +253,6 @@ def main():
 	global port
 	global timeout
 	global algos
-	global axfr_udp
 
 	parser = optparse.OptionParser()
 	parser.add_option("-k", "--knownhosts", "--known-hosts", 
@@ -313,12 +310,7 @@ def main():
 			type="string",
 			dest="nameserver",
 			default="",
-			help="nameserver to use for AXFR (only valid with -s and -a")
-	parser.add_option("-U", "--axfr-udp",
-			action="store_true",
-			dest="axfr_udp",
-			default=False,
-			help="use UDP for AXFR queries (defaults to TCP)")
+			help="nameserver to use for AXFR (only valid with -s -a)")
 	(options, args) = parser.parse_args()
 
 	# parse options
@@ -334,7 +326,6 @@ def main():
 	algos = options.algo or ["dsa", "rsa"]
 	all_hosts = options.all_hosts
 	port = options.port
-	axfr_udp = options.axfr_udp
 	hostnames = ()
 
 	if options.version:
