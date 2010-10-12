@@ -6,9 +6,10 @@
 
 import os
 import sys
+import subprocess
 import getopt
 import base64
-import sha
+import hashlib
 import commands
 import time
 # www.dnspython.org
@@ -36,13 +37,13 @@ global algo
 def usage():
 
 	print "usage: sshfp -k [-d] [-t algo] [-T timeout] [ knownhosts_file ] [-o output] [ [-a] | host1 [host2 ... ] ]"
-	print "       sshfp -s [-d] [-t algo] [-T timeout] [ [-p port] [-a domainname] [-o output] | host1 [host2 .. ] ] [@ns]"
+	print "	   sshfp -s [-d] [-t algo] [-T timeout] [ [-p port] [-a domainname] [-o output] | host1 [host2 .. ] ] [@ns]"
 	print "examples:"
-	print "          sshfp -k www.xelerance.com"
-	print "          sshfp -k ~paul/.ssh/known_hosts -a "
-	print "          sshfp -s www.openswan.org"
-	print "          sshfp -s -p 2222 xelerance.com"
-	print "          sshfp -s -T 30 -t rsa -d -a -o sshfp.txt xelerance.com @ns0.xelerance.net"
+	print "		  sshfp -k www.xelerance.com"
+	print "		  sshfp -k ~paul/.ssh/known_hosts -a "
+	print "		  sshfp -s www.openswan.org"
+	print "		  sshfp -s -p 2222 xelerance.com"
+	print "		  sshfp -s -T 30 -t rsa -d -a -o sshfp.txt xelerance.com @ns0.xelerance.net"
 
 def create_sshfp(hostname,keytype,keyblob):
 	global trailing
@@ -58,7 +59,7 @@ def create_sshfp(hostname,keytype,keyblob):
 	except TypeError:
 		print "FAILED on hostname "+hostname+" with keyblob "+keyblob
 		return "ERROR"
-	fpsha1 = sha.new(rawkey).hexdigest()
+	fpsha1 = hashlib.sha1(rawkey).hexdigest()
 	# check for Reverse entries
 	reverse = 1
 	parts = hostname.split(".",3)
@@ -129,7 +130,7 @@ def getRecord(domain,type):
 		# just return first entry we got, answers[0].target does not work
 		if type == "A":
 			return rdata
-        	if type == "NS":
+		if type == "NS":
 			return str(rdata.target)
 		else:
 			print "error in getRecord, unknown type "+type
@@ -180,15 +181,16 @@ def sshfpFromDNS(hosts):
 		hosts = hosts[:-1]
 	global timeout
 	global algo
-	cmd = "ssh-keyscan -p %s -T %s -t %s %s" % (port, timeout, algo, hosts)
+	cmd = ["ssh-keyscan", "-p", str(port), "-T", str(timeout), "-t", algo] + hosts
 	if quiet:
-		cmd = cmd + " 2>/dev/null"
-	tochild, fromchild, childerror = os.popen3(cmd, 'r')
-        err = childerror.readlines()
-        khdns = "\n".join(fromchild.readlines())
-        for e in err:
-                if e[0] != "#":
-                        print >>sys.stderr, e
+		process = subprocess.Popen(cmd, stdout=subprocess.PIPE)
+	else:
+		process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+	if not quiet:
+		for e in process.stderr:
+			if e[0] != "#":
+				print >>sys.stderr, e
+	khdns = "\n".join(process.stdout)
 	return processRaw(khdns,hosts)
 	
 def main(argv=None):
@@ -342,7 +344,7 @@ def main(argv=None):
 	if dodns:
 
 		# filter special case for using @nameserver, verify for misinterpreted options as args
-		newargs = ""
+		newargs = []
 		for arg in args:
 			if arg != "":
 				if arg[0]=="@":
@@ -351,7 +353,7 @@ def main(argv=None):
 					if not all_hosts:
 						print "WARNING: ssh-keyscan does not support @nameserver syntax, ignoring"
 				else:
-					newargs = newargs + arg +" "
+					newargs.append(arg)
 				if arg[0]=="-":
 					# shit, misinterpreted option as argument. We'll try to be more clever in the future.
 					usage()
@@ -378,7 +380,7 @@ def main(argv=None):
 		except IOError:
 			print "error: can't open '"+output+"' for writing"
 			sys.exit()
-        	else:
+		else:
 			fp.write(data)
 			fp.close()
 	else:
