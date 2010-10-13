@@ -4,6 +4,7 @@ v1.1.6
 - Use optparse, some code refactoring [James Brown]
 - Added -U UDP option [James Brown]
 - Rename of some functions [James Brown]
+- doclifted man page, generate when needed using xmlto [Paul]
 
 v1.1.5
 - Fixes for https://bugs.launchpad.net/ubuntu/+source/sshfp/+bug/355886

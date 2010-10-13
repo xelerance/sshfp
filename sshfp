@@ -46,8 +46,9 @@ DEFAULT_KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
 
 def show_version():
 	print >>sys.stderr, "sshfp version: " + VERSION
-	print >>sys.stderr, "Authors:\n Paul Wouters <paul@xelerance.com>\n Jake Appelbaum <jacob@appelbaum.net>"
 	print >>sys.stderr, "Source : http://www.xelerance.com/software/sshfp/"
+	print >>sys.stderr, "Authors:\n Paul Wouters <paul@xelerance.com>\n Jake Appelbaum <jacob@appelbaum.net>"
+	print >>sys.stderr, " James Brown <jbrown@yelp.com>"
 
 def create_sshfp(hostname, keytype, keyblob):
 	"""Creates an SSH fingerprint"""
