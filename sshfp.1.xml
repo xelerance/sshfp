@@ -3,11 +3,11 @@
                    "http://www.oasis-open.org/docbook/xml/4.1.2/docbookx.dtd">
 <!-- lifted from troff+man by doclifter -->
 <refentry id='sshfp1'>
-<refentryinfo><date>1.1.4</date></refentryinfo>
+<refentryinfo><date>1.1.6</date></refentryinfo>
 <refmeta>
 <refentrytitle>sshfp</refentrytitle>
 <manvolnum>1</manvolnum>
-<refmiscinfo class='date'>1.1.4</refmiscinfo>
+<refmiscinfo class='date'>1.1.6</refmiscinfo>
 <refmiscinfo class='source'>Paul Wouters</refmiscinfo>
 <refmiscinfo class='manual'>Internet / DNS</refmiscinfo>
 </refmeta>

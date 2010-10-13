@@ -41,7 +41,7 @@ global timeout
 global algo
 global axfr_udp
 
-VERSION = "1.1.4"
+VERSION = "1.1.6"
 DEFAULT_KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
 
 def show_version():
