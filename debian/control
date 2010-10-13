@@ -7,7 +7,7 @@ Standards-Version: 3.6.1
 
 Package: sshfp
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, python, python-dns, ssh
+Depends: ${shlibs:Depends}, ${misc:Depends}, python (>=2.4), python-dnspython, ssh
 Description: generates RFC4255 SSHFP DNS records
  sshfp generates RFC4255 SSHFP DNS records based on the public keys 
  as stored in a known_hosts file or as obtained from ssh servers directly.
