@@ -41,7 +41,6 @@ def show_version():
 	print >>sys.stderr, "sshfp version: " + VERSION
 	print >>sys.stderr, "Authors:\n Paul Wouters <paul@xelerance.com>\n Jake Appelbaum <jacob@appelbaum.net>"
 	print >>sys.stderr, "Source : http://www.xelerance.com/software/sshfp/"
-	sys.exit(0)
 
 def create_sshfp(hostname,keytype,keyblob):
 	global trailing
@@ -92,7 +91,7 @@ def get_known_host_entry(known_hosts, host):
 			outputl.append(e)
 	return "\n".join(outputl)
 
-def sshfpFromFile(khfile,wantedHosts):
+def sshfp_from_file(khfile,wantedHosts):
 	global all_hosts
 	global algo
 
@@ -245,7 +244,7 @@ def sshfp_from_dns(hosts):
 	khdns = stdout
 	return process_records(khdns,hosts)
 	
-def main(argv=None):
+def main():
 	global all_hosts
 	global trailing
 	global nameserver
@@ -330,6 +329,7 @@ def main(argv=None):
 
 	if options.version:
 		show_version()
+		sys.exit(0)
 	if not quiet and port <> 22:
 		print >>sys.stderr, "WARNING: non-standard port numbers are not designated in SSHFP records"
 	if not quiet and options.known_hosts and options.scan:
@@ -360,7 +360,7 @@ def main(argv=None):
 			sys.exit(1)
 		data = sshfp_from_dns(args)
 	else: # known_hosts
-		data = sshfpFromFile(khfile, args)
+		data = sshfp_from_file(khfile, args)
 
 	if output:
 		try:
