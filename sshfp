@@ -8,9 +8,7 @@ import os
 import sys
 import subprocess
 import optparse
-import getopt
 import base64
-import commands
 import time
 # www.dnspython.org
 try:
