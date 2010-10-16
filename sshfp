@@ -329,7 +329,7 @@ def main():
 	if options.version:
 		show_version()
 		sys.exit(0)
-	if not quiet and port <> 22:
+	if not quiet and port != 22:
 		print >> sys.stderr, "WARNING: non-standard port numbers are not designated in SSHFP records"
 	if not quiet and options.known_hosts and options.scan:
 		print >> sys.stderr, "WARNING: Ignoring -k option, -s was passwd"
