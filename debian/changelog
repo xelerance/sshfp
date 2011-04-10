@@ -1,6 +1,6 @@
-sshfp (1.1.5-1xelerance1) lucid; urgency=low
+sshfp (1.1.6-1xelerance1) lucid; urgency=low
 
-  * Update to 1.1.5
+  * Update to 1.1.6
   * Resync debian/ with Debian (thanks)
 
   The real changelog is in /usr/share/doc/sshfp/changelog.gz
@@ -9,4 +9,4 @@ sshfp (1.1.5-1xelerance1) lucid; urgency=low
   not file any Debian/Ubuntu bug reports for this package but contact
   <simon@xelerance.com> or <support@xelerance.com> if you have a problem.
 
- -- Simon Deziel <simon@xelerance.com>>  Mon, 30 Aug 2010 12:07:15 -0400
+ -- Simon Deziel <simon@xelerance.com>>  Wed, 13 Oct 2010 01:09:15 -0400
