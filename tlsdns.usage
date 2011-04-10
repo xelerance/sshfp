@@ -1,0 +1,67 @@
+secdns: Generate DNS records containing security information for various services like SSH,
+
+
+secdns [options] <hostname> [options] [<hostname> [options]]
+secdns -n <nameserver> <zone> [options] [<zone> [options]]   (requires AXFR permission)
+
+  -a   attempt to generate SSHFP, IPSECKEY, TLSA and HASTLS records
+  -D   Insist all host DNS lookups are secured by an AD bit (trusted local resolver)
+         (default is warn-only)
+
+
+
+Dynamic DNS options
+
+--update					Propagate generated records via Dynamic DNS update
+  --forward					send an update for the forward zone based on FQDN
+  --reverse					send an update for the reverse zone based on IP[s]
+
+
+
+TLS DNS records
+------------
+
+--hastls					Generate a HASTLS record [RFCxxxx]
+   --with-fallback/--without-fallback		Set the default fallback policy for all records if not specified per service
+						(default is no fallback for web,imap/pop3, allowed fallback for smtp)
+   --service-discover				Generate HASTLS record based on probed services
+						This only covers wellknown services (email & web)
+   --service [--with-fallback] <port|name>	Add the <name> service to the HASTLS list. Do not allow fallback per default
+	[, <port|name>]					For inline TLS services, specify twice. Examples:
+
+OR
+   --service www
+   --fallback-service http
+
+						--service http,https     - allow web traffic, prefer https, no fallback
+						--service --with-fallback smtp,smtp	 - allow email with/without STARTTLS
+   --raw					Specify record in "generic dns record" format for older nameservers.
+						   uses RRTYPE #65280 (private use until IANA assigns the RRTYPE code)
+
+--tlsa 						Generate a TLSA record [RFCxxxx]
+   --probe					Obtain PKIX certificate or bare public key by connecting to the secure service
+   --file					Obtain PKIX certificate or bare public key from the specified file [formats?]
+						   use user@host:filename to specify a file over ssh
+  --use-certhash				The default - Use the same hashing algorithm as used within the certificate
+						Only valid for PKIX certificate based TLS - ignored for bare public keys
+  --use-hash <hashname>				Use <hashname> instead of the hash used in the certificate.
+						See IANA TLS hashnames at URL here for valid hashes
+   --raw					Specify record in "generic dns record" format for older nameservers.
+						   uses RRTYPE #65281 (private use until IANA assigns the RRTYPE code)
+
+--tlstxt					Generate Kaminsky style TXT records for TLS service (freebird)
+
+IPSEC DNS records
+
+--ipseckey | --ipsectxt				Generate IPSECKEY record [RFCxxxx] or TXT record [Openswan spec]
+  [--file <filename>]				Obtain bare public key from a local file in ipsec.secrets(x) format
+  [--showhostkey [[--host <hostname>]		Obtain bare public key via the openswan "ipsec showhostkey" command.
+						If hostname is specified, a login as root is attempted to run the command.
+  --gateway					Specify gateway IP (default: use host itself as gateway)
+  --pref					Specify preference (similar to MX records - default 10)
+
+SSH DNS records
+
+--sshfp						Generate SSHFP records - see sshfp(1)
+
+
