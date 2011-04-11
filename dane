@@ -10,8 +10,8 @@
 
 import sys
 import getopt
-import base64
 import argparse
+import binascii
 
 # We want ldns for AD flag support - maybe we will add libunbound later to not need to depend on
 # DNSSEC capable resolver in /etc/resolv.conf
@@ -136,9 +136,8 @@ def draft_genTLSA(hostname, address, certtype, reftype):
 		print "Only EE-cert supported right now"
 	# octet length is half of the string length
 	if reftype == 0:
-		cert64 = base64.b64encode(dercert)
-		return "_443._tcp.%s. IN TYPE65468 \# %s 0%s0%s%s"%(hostname,len(cert64)+2,certtype,reftype, cert64)
-
+		certhex = binascii.b2a_hex(dercert).upper()
+		return "_443._tcp.%s IN TYPE65468 \# %s 0%s0%s%s"%(hostname,len(certhex)/2+2,certtype,reftype, certhex)
 	if reftype == 1:
 		# sha256
 		data_length = 32
@@ -147,7 +146,7 @@ def draft_genTLSA(hostname, address, certtype, reftype):
 		data_length = 64
 	# certtype and reftype are part of the length
 	data_length += 2  
-	return "_443._tcp.%s. IN TYPE65468 \# %s 0%s0%s%s"%(hostname,data_length,certtype,reftype, hashCert(reftype,dercert))
+	return "_443._tcp.%s IN TYPE65468 \# %s 0%s0%s%s"%(hostname,data_length,certtype,reftype, hashCert(reftype,dercert))
 
 def rfc_genTLSA(hostname, address, certtype, reftype):
 	try:
@@ -162,12 +161,12 @@ def rfc_genTLSA(hostname, address, certtype, reftype):
 	conn.close()
 	if certtype != 1:
 		print "Only EE-cert supported right now"
-	return "_443._tcp.%s. IN TLSA %s %s %s"%(hostname, certtype, reftype, hashCert(reftype,dercert))
+	return "_443._tcp.%s IN TLSA %s %s %s"%(hostname, certtype, reftype, hashCert(reftype,dercert))
 
 # take PEM encoded EE-cert and DER encode it, then sha256 it
 def hashCert(reftype,certblob):
 	if reftype == 0:
-		return certblob
+		return binascii.b2a_hex(certblob).upper()
 	elif reftype == 1:
 		hashobj = hashlib.sha256()
 		hashobj.update(certblob)
@@ -192,30 +191,23 @@ def main(argv=None):
 
 	if argv is None:
 		argv = sys.argv
-
-	if argv is None:
-		main("-h")
-		sys.exit()
-
+		
 	# create the parser
 	parser = argparse.ArgumentParser(description='Create TLS related DNS records for hosts or an entire zone. Examples:\n   dane www.xelerance.com\n   dane --rfc xelerance.com @ns0.xelerance.net\n')
 
 	# AXFR
-	parser.add_argument('-n', '--nameserver', metavar="nameserver", action='append',
-		help='nameserver to query')
-
-	parser.add_argument('--axfr', action='store_true',
-		help='use AXFR (all A/AAAA records will be scanned)')
+	parser.add_argument('-n', '--nameserver', metavar="nameserver", action='append', help='nameserver to query')
+	parser.add_argument('--axfr', action='store_true', help='use AXFR (all A/AAAA records will be scanned)')
 	# IETF status related, currently --draft is the default
 	parser.add_argument('--draft', action='store_true',help='output in draft private rrtype (65468/65469) format (default)')
 	parser.add_argument('--rfc', action='store_true',help='output in rfc (TLSA/HASTLS) rrtype format')
 	
 	# HASTLS related
-	parser.add_argument('--hastls', action='store_true',help='generate HASTLS record')
-	parser.add_argument('--service', nargs='+', metavar="<service|port>", action='append',
-		help='add service without fallback to insecure')
-	parser.add_argument('--fallback', nargs='+', metavar="<service|port>", action='append',
-		help='add service with fallback to insecure')
+	# parser.add_argument('--hastls', action='store_true',help='generate HASTLS record')
+	# parser.add_argument('--service', nargs='+', metavar="<service|port>", action='append',
+	# 	help='add service without fallback to insecure')
+	# parser.add_argument('--fallback', nargs='+', metavar="<service|port>", action='append',
+	#	help='add service with fallback to insecure')
 
 	# TLSA related	
 	parser.add_argument('--tlsa', action='store_true',help='generate TLSA record (default:yes)')
@@ -235,7 +227,7 @@ def main(argv=None):
 	parser.add_argument('-6', dest='ipv6', action='store_true',help='use ipv6 networking only')
 
 	# finally, the host list
-	parser.add_argument('hosts', metavar="hostname", nargs='*')
+	parser.add_argument('hosts', metavar="hostname", nargs='+')
 
 	args = parser.parse_args(argv[1:])
 
@@ -283,20 +275,14 @@ def main(argv=None):
 		else:
 			fmt = "draft"
 
-	for host in args.hosts:
-		if args.tlsa:
-			print "do TLSA generation for %s"%host
-		if args.hastls:
-			print "do hastls generation for %s"%host
-		if args.txt:
-			print "do kaminsky style TLS records for %s"%host
-		if args.nameserver:
-			print "Use nameserver %s to query DNS records"%args.nameserver
-		if args.axfr:
-			print "Going to AXFR for %s @%s"%(host,args.nameserver)
+	if not args.hosts:
+		main("--help")
 
+	for host in args.hosts:
+		if host[-1] != ".":
+			host += "."
 		create_tlsa(host,1,reftype)
 		
 if __name__ == "__main__":
-	sys.exit(main())
+	sys.exit(main(sys.argv))
 
