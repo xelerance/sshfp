@@ -10,8 +10,17 @@
 
 import sys
 import getopt
-import argparse
 import binascii
+import ssl, socket
+import hashlib
+
+try:
+	import argparse
+except ImportError:
+	print "dane requires the python-argparse"
+	print "Fedora/CentOS: yum install python-argparse"
+	print "Debian/Ubuntu: apt-get install python-argparse"
+	sys.exit()
 
 # We want ldns for AD flag support - maybe we will add libunbound later to not need to depend on
 # DNSSEC capable resolver in /etc/resolv.conf
@@ -19,14 +28,10 @@ try:
 	import ldns
 except ImportError:
 	print "dane requires the ldns-python sub-package from http://www.nlnetlabs.nl/projects/ldns/"
-	print "Fedora: yum install ldns-python"
-	print "Debian: apt-get install python-ldns"
+	print "Fedora/CentOS: yum install ldns-python"
+	print "Debian/Ubuntu: apt-get install python-ldns"
 	sys.exit()
 
-# crypto stuff to do minimal TLS to get server certs
-import ssl, socket
-
-import hashlib
 
 global fmt
 global secure
