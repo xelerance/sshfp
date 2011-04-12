@@ -124,7 +124,7 @@ def draft_genTLSA(hostname, address, certtype, reftype):
 	# we would just have to convert back to DER using ssl.PEM_cert_to_DER_cert()
 	try:
 		conn = socket.socket()
-		conn = socket.connect((address, 443))
+		conn.connect((address, 443))
 	except socket.error, msg:
 		conn  = None
 		print "%s (%s): %s"%(hostname, address,msg)
@@ -157,10 +157,10 @@ def draft_genTLSA(hostname, address, certtype, reftype):
 def rfc_genTLSA(hostname, address, certtype, reftype):
 	try:
 		conn = socket.socket()
-		conn = socket.connect((address, 443))
+		conn.connect((address, 443))
 	except socket.error, msg:
-		# quit silently
 		conn = None
+		print "%s (%s): %s"%(hostname, address,msg)
 		return
 	sock = ssl.wrap_socket(conn)
 	dercert = sock.getpeercert(True)
