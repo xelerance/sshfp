@@ -123,7 +123,8 @@ def draft_genTLSA(hostname, address, certtype, reftype):
 	# We don't use ssl.get_server_certificate because it does not support IPv6, and it converts DER to PEM, which
 	# we would just have to convert back to DER using ssl.PEM_cert_to_DER_cert()
 	try:
-		conn = socket.create_connection((address, 443))
+		conn = socket.socket()
+		conn = socket.connect((address, 443))
 	except socket.error, msg:
 		conn  = None
 		print "%s (%s): %s"%(hostname, address,msg)
@@ -155,7 +156,8 @@ def draft_genTLSA(hostname, address, certtype, reftype):
 
 def rfc_genTLSA(hostname, address, certtype, reftype):
 	try:
-		conn = socket.create_connection((address, 443))
+		conn = socket.socket()
+		conn = socket.connect((address, 443))
 	except socket.error, msg:
 		# quit silently
 		conn = None
