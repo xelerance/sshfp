@@ -74,7 +74,7 @@ def create_tlsa(hostname, certtype, reftype):
 			if secure:
 				sys.exit("Aborted: dnssec required but DNS lookup was insecure (use --insecure to override)\n")
 			else:
-				print("Warning: dnssec requested but not available")
+				print("Warning: domain is not secured with dnssec!")
 	else:
 		sys.exit("unknown ldns error, aborted")
 
