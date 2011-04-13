@@ -8,10 +8,11 @@ Standards-Version: 3.8.4
 
 Package: sshfp
 Architecture: all
-Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python-dnspython, openssh-client
+Depends: ${shlibs:Depends}, ${misc:Depends}, ${python:Depends}, python-dnspython, openssh-client, python-argparse
 XB-Python-Version: ${python:Versions}
 Description: Generate RFC-4255 SSHFP DNS records from knownhosts files or ssh-keyscan
  sshfp generates DNS SSHFP records from SSH public keys. sshfp can take
  public keys from a knownhosts file or from scanning the host's sshd daemon.
  The ssh client can use these SSHFP records if you set "VerifyHostKeyDNS yes"
  in the file /etc/ssh/ssh_config or in your .ssh/config. See RFC-4255
+ New: The dane command generates IETF DANE WG DNS records.
