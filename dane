@@ -10,8 +10,17 @@
 
 import sys
 import getopt
-import argparse
 import binascii
+import ssl, socket
+import hashlib
+
+try:
+	import argparse
+except ImportError:
+	print "dane requires the python-argparse"
+	print "Fedora/CentOS: yum install python-argparse"
+	print "Debian/Ubuntu: apt-get install python-argparse"
+	sys.exit()
 
 # We want ldns for AD flag support - maybe we will add libunbound later to not need to depend on
 # DNSSEC capable resolver in /etc/resolv.conf
@@ -19,14 +28,10 @@ try:
 	import ldns
 except ImportError:
 	print "dane requires the ldns-python sub-package from http://www.nlnetlabs.nl/projects/ldns/"
-	print "Fedora: yum install ldns-python"
-	print "Debian: apt-get install python-ldns"
+	print "Fedora/CentOS: yum install ldns-python"
+	print "Debian/Ubuntu: apt-get install python-ldns"
 	sys.exit()
 
-# crypto stuff to do minimal TLS to get server certs
-import ssl, socket
-
-import hashlib
 
 global fmt
 global secure
@@ -131,7 +136,8 @@ def draft_genTLSA(hostname, address, certtype, reftype):
 	# We don't use ssl.get_server_certificate because it does not support IPv6, and it converts DER to PEM, which
 	# we would just have to convert back to DER using ssl.PEM_cert_to_DER_cert()
 	try:
-		conn = socket.create_connection((address, 443))
+		conn = socket.socket()
+		conn.connect((address, 443))
 	except socket.error, msg:
 		conn  = None
 		if not quiet:
@@ -165,10 +171,11 @@ def draft_genTLSA(hostname, address, certtype, reftype):
 
 def rfc_genTLSA(hostname, address, certtype, reftype):
 	try:
-		conn = socket.create_connection((address, 443))
+		conn = socket.socket()
+		conn.connect((address, 443))
 	except socket.error, msg:
-		# quit silently
 		conn = None
+		print "%s (%s): %s"%(hostname, address,msg)
 		return
 	sock = ssl.wrap_socket(conn)
 	dercert = sock.getpeercert(True)
