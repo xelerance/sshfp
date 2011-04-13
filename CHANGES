@@ -1,10 +1,11 @@
-v1.1.6
-- Fix quiet for external commands [James Brown]
-- Merged in subprocess changes [James Brown]
-- Use optparse, some code refactoring [James Brown]
-- Added -U UDP option [James Brown]
-- Rename of some functions [James Brown]
-- doclifted man page, generate when needed using xmlto [Paul]
+v1.2.0
+- dane : Added the dane command (See IETF DANE working group) [Paul]
+- sshfp: Fix quiet for external commands [James Brown]
+- sshfp: Merged in subprocess changes [James Brown]
+- sshfp: Use optparse, some code refactoring [James Brown]
+- sshfp: Added -U UDP option [James Brown]
+- sshfp: Rename of some functions [James Brown]
+- sshfp: doclifted man page, generate when needed using xmlto [Paul]
 
 v1.1.5
 - Fixes for https://bugs.launchpad.net/ubuntu/+source/sshfp/+bug/355886
