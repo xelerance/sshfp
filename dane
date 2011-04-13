@@ -33,12 +33,43 @@ global secure
 global transport
 secure = True
 transport = "both"
+global quiet
+quiet = False
 
 def create_txt(hostname, pubkey):
 	""" Kaminsky / Gilmore type TLS pubkey in TXT RRtype """
 
 def create_hastls(hostname, fallback_default, services):
 	""" Creates a HASTLS RRtype """
+
+def ldns_lookup(hostname):
+	global secure
+	global quiet
+	# do ldns work, complain if no AD bit
+	resolver = ldns.ldns_resolver.new_frm_file("/etc/resolv.conf")
+	resolver.set_dnssec(True)
+	pkt = resolver.query(hostname, ldns.LDNS_RR_TYPE_ANY, ldns.LDNS_RR_CLASS_IN)
+	if pkt.get_rcode() is ldns.LDNS_RCODE_SERVFAIL:
+		print "%s lookup failed (server error or dnssec validation failed)"%name
+		print "use --insecure to bypass dnssec validation - NOT RECOMMENDED!!"
+		sys.exit(1)
+	if pkt.get_rcode() is ldns.LDNS_RCODE_NXDOMAIN:
+		if pkt.ad():
+			confidence = "(non-existence proven by DNSSEC)"
+		else:
+			confidence = ""
+		sys.exit("%s lookup failed %s"%(hostname,confidence))
+	if pkt.get_rcode() is ldns.LDNS_RCODE_NOERROR:
+		if not pkt.ad():
+			if secure:
+				sys.exit("Aborted: dnssec required but DNS lookup was insecure (use --insecure to override)\n")
+			else:
+				if quiet:
+					print("Warning: dnssec requested but not available")
+	else:
+		sys.exit("unknown ldns error, aborted")
+
+	return pkt
 
 def create_tlsa(hostname, certtype, reftype):
 	global fmt
@@ -49,30 +80,8 @@ def create_tlsa(hostname, certtype, reftype):
 		fmt = "draft"
 
 	"""Creates a TLSA RRtype"""
-	""" get all TLSA/HASTLS/A/AAAA records for hostname """
-	# do ldns work, complain if no AD bit
-	resolver = ldns.ldns_resolver.new_frm_file("/etc/resolv.conf")
-	resolver.set_dnssec(True)
-	pkt = resolver.query(hostname, ldns.LDNS_RR_TYPE_ANY, ldns.LDNS_RR_CLASS_IN)
-	if pkt.get_rcode() is ldns.LDNS_RCODE_SERVFAIL:
-		print "%s lookup failed (server error or dnssec validation failed)"%name
-		print "use -cd to bypass dnssec validation - NOT RECOMMENDED!!"
-		sys.exit(1)
-	if pkt.get_rcode() is ldns.LDNS_RCODE_NXDOMAIN:
-		if pkt.ad():
-			confidence = "(non-existence proven by DNSSEC)"
-		else:
-			confidence = ""
-		print "%s lookup failed %s"%(hostname,confidence)
-	if pkt.get_rcode() is ldns.LDNS_RCODE_NOERROR:
-		if not pkt.ad():
-			if secure:
-				sys.exit("Aborted: dnssec required but DNS lookup was insecure (use --insecure to override)\n")
-			else:
-				print("Warning: dnssec requested but not available")
-	else:
-		sys.exit("unknown ldns error, aborted")
-
+	""" get all A/AAAA records for hostname """
+	pkt = ldns_lookup(hostname)
 	# we now have a valid answer, CNAME's got expanded, so we have one or more A/AAAA records
 	ipv4 = pkt.rr_list_by_type(ldns.LDNS_RR_TYPE_A, ldns.LDNS_SECTION_ANSWER)
 	ipv6 = pkt.rr_list_by_type(ldns.LDNS_RR_TYPE_AAAA, ldns.LDNS_SECTION_ANSWER)
@@ -107,26 +116,32 @@ def create_tlsa(hostname, certtype, reftype):
 						rfcs.append(rfc)
 			except:
 				pass
-		
-	if not fmt == "rfc":
-		print "%s"%("\n".join(drafts))
-	if not fmt == "draft":
-		print "%s"%("\n".join(rfcs))
+
+	if rfcs:
+		if not fmt == "rfc":
+			print "%s"%("\n".join(drafts))
+	if drafts:
+		if not fmt == "draft":
+			print "%s"%("\n".join(rfcs))
 
 # return the record
 def draft_genTLSA(hostname, address, certtype, reftype):
+	global quiet
+
 	# We don't use ssl.get_server_certificate because it does not support IPv6, and it converts DER to PEM, which
 	# we would just have to convert back to DER using ssl.PEM_cert_to_DER_cert()
 	try:
 		conn = socket.create_connection((address, 443))
 	except socket.error, msg:
 		conn  = None
-		print "%s (%s): %s"%(hostname, address,msg)
+		if not quiet:
+			print "%s (%s): %s"%(hostname, address,msg)
 		return
 	try:
 		sock = ssl.wrap_socket(conn)
 	except ssl.SSLError, msg:
-		print "%s (%s): %s"%(hostname, address,msg)
+		if not quiet:
+			print "%s (%s): %s"%(hostname, address,msg)
 		return
 	dercert = sock.getpeercert(True)
 	sock.close()
@@ -188,6 +203,7 @@ def main(argv=None):
 	global fmt
 	global secure
 	global transport
+	global quiet
 
 	if argv is None:
 		argv = sys.argv
@@ -226,6 +242,8 @@ def main(argv=None):
 	parser.add_argument('-4', dest='ipv4', action='store_true',help='use ipv4 networking only')
 	parser.add_argument('-6', dest='ipv6', action='store_true',help='use ipv6 networking only')
 
+	parser.add_argument('-q', '--quiet', action='store_true',help='suppress warnings and errors')
+
 	# finally, the host list
 	parser.add_argument('hosts', metavar="hostname", nargs='+')
 
@@ -244,6 +262,9 @@ def main(argv=None):
 		reftype=0
 	else:
 		reftype=1
+
+	if args.quiet:
+		quiet = True
 
 	if args.tlsa:
 		args.eecert = True
@@ -266,23 +287,67 @@ def main(argv=None):
 			args.hosts.remove(host)
 			args.axfr=True
 	
-	#print args
 
-		if args.rfc and args.draft:
-			fmt = "both"
-		elif args.rfc:
-			fmt = "rfc"
-		else:
-			fmt = "draft"
+	if args.rfc and args.draft:
+		fmt = "both"
+	elif args.rfc:
+		fmt = "rfc"
+	else:
+		fmt = "draft"
 
 	if not args.hosts:
 		main("--help")
 
-	for host in args.hosts:
-		if host[-1] != ".":
-			host += "."
-		create_tlsa(host,1,reftype)
-		
+	if not args.axfr:
+		for host in args.hosts:
+			if host[-1] != ".":
+				host += "."
+			if not args.axfr:
+				create_tlsa(host,1,reftype)
+	if args.axfr:
+		# Try and AXFR it
+		# BUG: only works when nameserver is a name, not an ip :(
+		dname = ldns.ldns_dname(args.nameserver[0])
+		resolver = ldns.ldns_resolver.new_frm_file("/etc/resolv.conf")
+		resolver.set_dnssec(True)
+		addr = resolver.get_addr_by_name(dname, ldns.LDNS_RR_CLASS_IN, ldns.LDNS_RD);
+		if (not addr):
+			sys.exit("nameserver '%s' failed to resolve"%args.nameserver[0])
+		#remove all nameservers
+		while resolver.pop_nameserver(): 
+			pass
+		#insert server addr
+		for rr in addr.rrs():
+			resolver.push_nameserver_rr(rr)
+
+		for host in args.hosts:
+			dname = ldns.ldns_dname(host)
+			status = resolver.axfr_start(dname, ldns.LDNS_RR_CLASS_IN)
+			if status != ldns.LDNS_STATUS_OK:
+				raise Exception("Can't start AXFR. Error: %s" % ldns.ldns_get_errorstr_by_id(status))
+			#Print results
+			ipv4 = []
+			ipv6 = []
+			while True:
+				rr = resolver.axfr_next()
+				if not rr:
+					break
+
+				rdf = rr.owner()
+				if rr.get_type_str() == "A":
+					if not (rr.get_type_str() in ipv4):
+						ipv4.append(str(rdf))
+				if rr.get_type_str() == "AAAA":
+					if not (rr.get_type_str() in ipv6):
+						ipv6.append(str(rdf))
+
+			if transport != "ipv6":
+				for host in ipv4:
+					create_tlsa(host,1,reftype)
+			if transport != "ipv4":
+				for host in ipv6:
+					create_tlsa(host,1,reftype)
+	
 if __name__ == "__main__":
 	sys.exit(main(sys.argv))
 
