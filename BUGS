@@ -1,5 +1,8 @@
 KNOWN BUGS:
 
+20110413
+- dane for ipv6 always gives (2001:4178:2:1269::12): (-9, 'Address family for hostname not supported') even on systems with proper ipv6 support.
+
 20100914
 - sshfp -k ~/.ssh/known_hosts -a does not work as expected, because of
   internal confusion about -k requiring an argument or not (-k vs -s)
