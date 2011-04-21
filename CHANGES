@@ -7,6 +7,13 @@ v1.2.0
 - sshfp: Rename of some functions [James Brown]
 - sshfp: doclifted man page, generate when needed using xmlto [Paul]
 
+v1.1.6
+- Fix quiet for external commands [James Brown]
+- Merged in subprocess changes [James Brown]
+- Use optparse, some code refactoring [James Brown]
+- Added -U UDP option [James Brown]
+- Rename of some functions [James Brown]
+
 v1.1.5
 - Fixes for https://bugs.launchpad.net/ubuntu/+source/sshfp/+bug/355886
 - Fix for sha Deprecation warning [Martin Jackson]
