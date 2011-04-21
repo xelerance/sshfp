@@ -5,7 +5,7 @@ Original-Source: http://www.xelerance.com/software/sshfp/
 
 Files: debian/*
 Copyright © 2007, 2008, 2009, 2010 Julien Valroff <julien@kirya.net>
-Copyright © 2010 Simon Deziel <simon@xelerance.com>
+Copyright © 2010, 2011 Simon Deziel <simon@xelerance.com>
 License: GPL-2
  The Debian packaging information is under the GPL version 2
  .
@@ -13,7 +13,7 @@ License: GPL-2
  can be found in file "/usr/share/common-licenses/GPL-2".
 
 Files: *
-Copyright: Copyright © 2006-2010 Xelerance Corporation, Paul Wouters <paul@xelerance.com> and Jacob Appelbaum <jacob@appelbaum.net>
+Copyright: Copyright © 2006-2011 Xelerance Corporation, Paul Wouters <paul@xelerance.com> and Jacob Appelbaum <jacob@appelbaum.net>
 License: GPL-2
  This package is free software; you can redistribute it and/or modify
  it under the terms of the GNU General Public License as published by
