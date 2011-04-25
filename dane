@@ -3,7 +3,7 @@
 # dane is a tool to generate and verify HASTLS and TLSA records
 # By Paul Wouters <paul@xelerance.com> 
 # Copyright 2011 by Xelerance http://www.xelerance.com/
-# License: GNU GENERAL PUBLIC LICENSE Version 2
+# License: GNU GENERAL PUBLIC LICENSE Version 2 or later
 #
 # https://datatracker.ietf.org/wg/dane/charter/
 # https://datatracker.ietf.org/doc/draft-ietf-dane-protocol/
@@ -216,7 +216,7 @@ def main(argv=None):
 		argv = sys.argv
 		
 	# create the parser
-	parser = argparse.ArgumentParser(description='Create TLS related DNS records for hosts or an entire zone. version 1.2.0')
+	parser = argparse.ArgumentParser(description='Create TLS related DNS records for hosts or an entire zone. version 1.2.1')
 
 	# AXFR
 	parser.add_argument('-n', '--nameserver', metavar="nameserver", action='append', help='nameserver to query')
@@ -258,7 +258,7 @@ def main(argv=None):
 	args = parser.parse_args(argv[1:])
 
 	if args.version:
-		sys.exit("dane: version 1.2.0")
+		sys.exit("dane: version 1.2.1")
 	if not args.rfc:
 		args.draft = True
 
