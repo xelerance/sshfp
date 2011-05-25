@@ -13,6 +13,7 @@ import getopt
 import binascii
 import ssl, socket
 import hashlib
+import ipcalc
 
 try:
 	import argparse
@@ -40,6 +41,20 @@ secure = True
 transport = "both"
 global quiet
 quiet = False
+
+# return 4 or 6 for a valid ip in that family, 0 otherwise
+# This supports ipv6 including short notation (eg "::")
+def isValidIP(ipaddr):
+	try:
+		bits = len(ipcalc.IP(ipaddr).bin())
+	except:
+		return 0
+	if bits == 32:
+		return 4
+	elif bits == 128:
+		return 6
+	else:
+		return 0
 
 def create_txt(hostname, pubkey):
 	""" Kaminsky / Gilmore type TLS pubkey in TXT RRtype """
@@ -316,19 +331,28 @@ def main(argv=None):
 				create_tlsa(host,1,reftype)
 	if args.axfr:
 		# Try and AXFR it
-		# BUG: only works when nameserver is a name, not an ip :(
-		dname = ldns.ldns_dname(args.nameserver[0])
 		resolver = ldns.ldns_resolver.new_frm_file("/etc/resolv.conf")
 		resolver.set_dnssec(True)
-		addr = resolver.get_addr_by_name(dname, ldns.LDNS_RR_CLASS_IN, ldns.LDNS_RD);
-		if (not addr):
-			sys.exit("nameserver '%s' failed to resolve"%args.nameserver[0])
 		#remove all nameservers
-		while resolver.pop_nameserver(): 
-			pass
-		#insert server addr
-		for rr in addr.rrs():
-			resolver.push_nameserver_rr(rr)
+		if isValidIP(args.nameserver[0]) in [4,6]:
+			#Empty nameserver: remember that we still need it to resolver when dealing with name
+			while resolver.pop_nameserver(): 
+				pass
+			addr = ldns.ldns_rdf_new_frm_str(5,args.nameserver[0])
+			if (not addr):
+				sys.exit("nameserver '%s' failed to resolve"%args.nameserver[0])
+			resolver.push_nameserver(addr)
+		else:
+			dname = ldns.ldns_dname(args.nameserver[0])
+			addr = resolver.get_addr_by_name(dname, ldns.LDNS_RR_CLASS_IN, ldns.LDNS_RD);
+			#Empty nameserver: remember that we still need it to resolver when dealing with name
+			while resolver.pop_nameserver(): 
+				pass
+			if (not addr):
+				sys.exit("nameserver '%s' failed to resolve"%args.nameserver[0])
+			#insert server addr
+			for rr in addr.rrs():
+				resolver.push_nameserver_rr(rr)
 
 		for host in args.hosts:
 			dname = ldns.ldns_dname(host)
