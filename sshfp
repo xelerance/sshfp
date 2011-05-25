@@ -19,6 +19,7 @@ except ImportError:
 	print >> sys.stderr, "sshfp requires the python-dns package from http://www.pythondns.org/"
 	print >> sys.stderr, "Fedora: yum install python-dns"
 	print >> sys.stderr, "Debian: apt-get install python-dnspython   (NOT python-dns!)"
+	print >> sys.stderr, "openSUSE: zypper in python-dnspython"
 	sys.exit(1)
 
 try:

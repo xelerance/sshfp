@@ -17,20 +17,21 @@ import hashlib
 try:
 	import argparse
 except ImportError:
-	print "dane requires the python-argparse"
-	print "Fedora/CentOS: yum install python-argparse"
-	print "Debian/Ubuntu: apt-get install python-argparse"
-	sys.exit()
+	print >> sys.stderr, "dane requires the python-argparse"
+	print >> sys.stderr, "Fedora/CentOS: yum install python-argparse"
+	print >> sys.stderr, "Debian/Ubuntu: apt-get install python-argparse"
+	sys.exit(1)
 
 # We want ldns for AD flag support - maybe we will add libunbound later to not need to depend on
 # DNSSEC capable resolver in /etc/resolv.conf
 try:
 	import ldns
 except ImportError:
-	print "dane requires the ldns-python sub-package from http://www.nlnetlabs.nl/projects/ldns/"
-	print "Fedora/CentOS: yum install ldns-python"
-	print "Debian/Ubuntu: apt-get install python-ldns"
-	sys.exit()
+	print >> sys.stderr, "dane requires the ldns-python sub-package from http://www.nlnetlabs.nl/projects/ldns/"
+	print >> sys.stderr, "Fedora/CentOS: yum install ldns-python"
+	print >> sys.stderr, "Debian/Ubuntu: apt-get install python-ldns"
+	print >> sys.stderr, "openSUSE: zypper in python-ldns"
+	sys.exit(1)
 
 
 global fmt
@@ -55,8 +56,8 @@ def ldns_lookup(hostname):
 	resolver.set_dnssec(True)
 	pkt = resolver.query(hostname, ldns.LDNS_RR_TYPE_ANY, ldns.LDNS_RR_CLASS_IN)
 	if pkt.get_rcode() is ldns.LDNS_RCODE_SERVFAIL:
-		print "%s lookup failed (server error or dnssec validation failed)"%name
-		print "use --insecure to bypass dnssec validation - NOT RECOMMENDED!!"
+		print >> sys.stderr, "%s lookup failed (server error or dnssec validation failed)"%name
+		print >> sys.stderr, "use --insecure to bypass dnssec validation - NOT RECOMMENDED!!"
 		sys.exit(1)
 	if pkt.get_rcode() is ldns.LDNS_RCODE_NXDOMAIN:
 		if pkt.ad():
@@ -70,7 +71,7 @@ def ldns_lookup(hostname):
 				sys.exit("Aborted: dnssec required but DNS lookup was insecure (use --insecure to override)\n")
 			else:
 				if quiet:
-					print("Warning: dnssec requested but not available")
+					print >> sys.stderr, "Warning: dnssec requested but not available"
 	else:
 		sys.exit("unknown ldns error, aborted")
 
@@ -154,7 +155,7 @@ def draft_genTLSA(hostname, address, certtype, reftype):
 	conn.close()
 
 	if certtype != 1:
-		print "Only EE-cert supported right now"
+		print >> sys.stderr, "Only EE-cert supported right now"
 	# octet length is half of the string length
 	if reftype == 0:
 		certhex = binascii.b2a_hex(dercert).upper()
@@ -182,7 +183,7 @@ def rfc_genTLSA(hostname, address, certtype, reftype):
 	sock.close()
 	conn.close()
 	if certtype != 1:
-		print "Only EE-cert supported right now"
+		print >> sys.stderr, "Only EE-cert supported right now"
 	return "_443._tcp.%s IN TLSA %s %s %s"%(hostname, certtype, reftype, hashCert(reftype,dercert))
 
 # take PEM encoded EE-cert and DER encode it, then sha256 it
