@@ -1,4 +1,7 @@
-v1.2.0
+v1.2.1 (April 25th, 2011)
+- Fix copyright information to clearly make it is all GPLv2+ [Paul]
+
+v1.2.0 (April 13th, 2011)
 - dane : Added the dane command (See IETF DANE working group) [Paul]
 - sshfp: Fix quiet for external commands [James Brown]
 - sshfp: Merged in subprocess changes [James Brown]
@@ -7,7 +10,7 @@ v1.2.0
 - sshfp: Rename of some functions [James Brown]
 - sshfp: doclifted man page, generate when needed using xmlto [Paul]
 
-v1.1.6
+v1.1.6 (October 13th, 2010)
 - Fix quiet for external commands [James Brown]
 - Merged in subprocess changes [James Brown]
 - Use optparse, some code refactoring [James Brown]

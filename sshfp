@@ -2,7 +2,7 @@
 # Generate SSHFP DNS records (RFC4255) from knownhosts files or ssh-keyscan
 # Copyright by Xelerance http://www.xelerance.com/
 # Paul Wouters <paul@xelerance.com> and Jake Appelbaum <jacob@appelbaum.net>
-# License: GNU GENERAL PUBLIC LICENSE Version 2
+# License: GNU GENERAL PUBLIC LICENSE Version 2 or later
 
 import os
 import sys
@@ -19,6 +19,7 @@ except ImportError:
 	print >> sys.stderr, "sshfp requires the python-dns package from http://www.pythondns.org/"
 	print >> sys.stderr, "Fedora: yum install python-dns"
 	print >> sys.stderr, "Debian: apt-get install python-dnspython   (NOT python-dns!)"
+	print >> sys.stderr, "openSUSE: zypper in python-dnspython"
 	sys.exit(1)
 
 try:
@@ -38,7 +39,7 @@ global port
 global timeout
 global algo
 
-VERSION = "1.2.0"
+VERSION = "1.2.1"
 DEFAULT_KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
 
 def show_version():
