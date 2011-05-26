@@ -333,12 +333,12 @@ def main(argv=None):
 	if not args.hosts:
 		main("--help")
 
+	for host in args.hosts:
+		if host[-1] != ".":
+			host += "."
 	if not args.axfr:
 		for host in args.hosts:
-			if host[-1] != ".":
-				host += "."
-			if not args.axfr:
-				create_tlsa(host,1,reftype)
+			create_tlsa(host,1,reftype)
 	if args.axfr:
 		# Try and AXFR it
 		resolver = ldns.ldns_resolver.new_frm_file("/etc/resolv.conf")
