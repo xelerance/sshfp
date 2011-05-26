@@ -13,7 +13,6 @@ import getopt
 import binascii
 import ssl, socket
 import hashlib
-import ipcalc
 
 try:
 	import argparse
@@ -21,6 +20,16 @@ except ImportError:
 	print >> sys.stderr, "dane requires the python-argparse"
 	print >> sys.stderr, "Fedora/CentOS: yum install python-argparse"
 	print >> sys.stderr, "Debian/Ubuntu: apt-get install python-argparse"
+	print >> sys.stderr, "openSUSE: zypper in python-argparse"
+	sys.exit(1)
+
+try:
+	import ipcalc
+except ImportError:
+	print >> sys.stderr, "dane requires the python-ipcalc"
+	print >> sys.stderr, "Fedora/CentOS: yum install python-ipcalc"
+	print >> sys.stderr, "Debian/Ubuntu: apt-get install python-ipcalc"
+	print >> sys.stderr, "openSUSE: zypper in python-ipcalc"
 	sys.exit(1)
 
 # We want ldns for AD flag support - maybe we will add libunbound later to not need to depend on
@@ -334,7 +343,6 @@ def main(argv=None):
 		# Try and AXFR it
 		resolver = ldns.ldns_resolver.new_frm_file("/etc/resolv.conf")
 		resolver.set_dnssec(True)
-		#remove all nameservers
 		if isValidIP(args.nameserver[0]) in [4,6]:
 			#Empty nameserver: remember that we still need it to resolver when dealing with name
 			while resolver.pop_nameserver(): 
@@ -370,10 +378,10 @@ def main(argv=None):
 
 				rdf = rr.owner()
 				if rr.get_type_str() == "A":
-					if not (rr.get_type_str() in ipv4):
+					if not (rdf in ipv4):
 						ipv4.append(str(rdf))
 				if rr.get_type_str() == "AAAA":
-					if not (rr.get_type_str() in ipv6):
+					if not (rdf in ipv6):
 						ipv6.append(str(rdf))
 
 			if transport != "ipv6":
