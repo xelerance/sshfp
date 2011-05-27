@@ -5,7 +5,6 @@ import getopt
 import binascii
 import ssl, socket
 import hashlib
-import ldns
 import ldnsx
 
 try:
@@ -21,44 +20,39 @@ secure, transport, quiet, fmt = True, "both", False, "draft"
 
 def ldns_lookup(hostname):
 	# do ldns work, complain if no AD bit
-	resolver = ldns.ldns_resolver.new_frm_file("/etc/resolv.conf")
-	resolver.set_dnssec(True)
-	pkt = resolver.query(hostname, ldns.LDNS_RR_TYPE_ANY, ldns.LDNS_RR_CLASS_IN)
-	if pkt.get_rcode() is ldns.LDNS_RCODE_SERVFAIL:
+	resolver = ldnsx.resolver(dnssec=True)
+	pkt = resolver.query(hostname, "ANY")
+	if pkt.rcode() is "SERVFAIL":
 		print >> sys.stderr, "%s lookup failed (server error or dnssec validation failed)"%name
 		print >> sys.stderr, "use --insecure to bypass dnssec validation - NOT RECOMMENDED!!"
 		sys.exit(1)
-	if pkt.get_rcode() is ldns.LDNS_RCODE_NXDOMAIN:
-		if pkt.ad():
-			confidence = "(non-existence proven by DNSSEC)"
+	if pkt.rcode() is "NXDOMAIN":
+		if "ad" in pkt.flags():
+			sys.exit("%s lookup failed %s" % (hostname, "(non-existence proven by DNSSEC)") )
 		else:
-			confidence = ""
-		sys.exit("%s lookup failed %s"%(hostname,confidence))
-	if pkt.get_rcode() is ldns.LDNS_RCODE_NOERROR:
-		if not pkt.ad():
+			sys.exit("%s lookup failed" % hostname)
+	if pkt.rcode() is "NOERROR":
+		if "ad" not in pkt.flags():
 			if secure:
 				sys.exit("Aborted: dnssec required but DNS lookup was insecure (use --insecure to override)\n")
-			else:
-				if quiet:
-					print >> sys.stderr, "Warning: dnssec requested but not available"
+			elif quiet:
+				print >> sys.stderr, "Warning: dnssec requested but not available"
 	else:
-		sys.exit("unknown ldns error, aborted")
-
+		sys.exit("unknown ldns error, %s, aborted" % pkt.rcode())
 	return pkt
 
 
 def create_tlsa(hostname, certtype, reftype):
 	"""Creates a TLSA RRtype"""
 	""" get all A/AAAA records for hostname """
-	pkt = ldns_lookup(hostname)
+	ans = ldns_lookup(hostname).answer()
+	#lookup_results = map(lambda rr: 
 	# we now have a valid answer, CNAME's got expanded, so we have one or more A/AAAA records
-	ipv4 = pkt.rr_list_by_type(ldns.LDNS_RR_TYPE_A, ldns.LDNS_SECTION_ANSWER)
-	ipv6 = pkt.rr_list_by_type(ldns.LDNS_RR_TYPE_AAAA, ldns.LDNS_SECTION_ANSWER)
 	drafts = []
 	rfcs = []
 
 	if ipv4 and transport is not "ipv6":
-		for arecord in ipv4.rrs():
+		for arecord in filter(lambda rr: rr.dns_type == "A", ans):
 			try:
 				a = str(arecord).split()[-1].strip()
 				v4TLSA = draft_genTLSA(hostname, a, certtype, reftype)
@@ -72,7 +66,7 @@ def create_tlsa(hostname, certtype, reftype):
 			except:
 				pass
 	if ipv6 and transport is not "ipv4":
-		for aaaarecord in ipv6.rrs():
+		for aaaarecord in filter(lambda rr: rr.dns_type == "AAAA", ans):
 			try:
 				aaaa = str(aaaarecord).split()[-1].strip()
 				v6TLSA = draft_genTLSA(hostname, aaaa, certtype, reftype)
