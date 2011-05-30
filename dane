@@ -118,7 +118,7 @@ def create_tlsa(hostname, certtype, reftype):
 	drafts = []
 	rfcs = []
 
-	if ipv4 and transport is not "ipv6":
+	if ipv4 and transport != "ipv6":
 		for arecord in ipv4.rrs():
 			try:
 				a = str(arecord).split()[-1].strip()
@@ -132,7 +132,7 @@ def create_tlsa(hostname, certtype, reftype):
 						rfcs.append(rfc)
 			except:
 				pass
-	if ipv6 and transport is not "ipv4":
+	if ipv6 and transport != "ipv4":
 		for aaaarecord in ipv6.rrs():
 			try:
 				aaaa = str(aaaarecord).split()[-1].strip()

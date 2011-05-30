@@ -22,24 +22,24 @@ def ldns_lookup(hostname):
 	# do ldns work, complain if no AD bit
 	resolver = ldnsx.resolver(dnssec=True)
 	pkt = resolver.query(hostname, "ANY")
-	if pkt.rcode() is "SERVFAIL":
-		print >> sys.stderr, "%s lookup failed (server error or dnssec validation failed)"%name
+	if pkt.rcode() == "SERVFAIL":
+		print >> sys.stderr, "%s lookup failed (server error or dnssec validation failed)" % name
 		print >> sys.stderr, "use --insecure to bypass dnssec validation - NOT RECOMMENDED!!"
 		sys.exit(1)
-	if pkt.rcode() is "NXDOMAIN":
+	if pkt.rcode() == "NXDOMAIN":
 		if "ad" in pkt.flags():
-			sys.exit("%s lookup failed %s" % (hostname, "(non-existence proven by DNSSEC)") )
+			sys.exit("%s lookup failed (non-existence proven by DNSSEC)" % hostname )
 		else:
-			sys.exit("%s lookup failed" % hostname)
-	if pkt.rcode() is "NOERROR":
+			sys.exit("%s lookup failed" % hostname )
+	if pkt.rcode() == "NOERROR":
 		if "ad" not in pkt.flags():
 			if secure:
 				sys.exit("Aborted: dnssec required but DNS lookup was insecure (use --insecure to override)\n")
 			elif quiet:
 				print >> sys.stderr, "Warning: dnssec requested but not available"
+		return pkt
 	else:
 		sys.exit("unknown ldns error, %s, aborted" % pkt.rcode())
-	return pkt
 
 
 def create_tlsa(hostname, certtype, reftype):
@@ -51,7 +51,7 @@ def create_tlsa(hostname, certtype, reftype):
 	drafts = []
 	rfcs = []
 
-	if ipv4 and transport is not "ipv6":
+	if ipv4 and transport != "ipv6":
 		for arecord in filter(lambda rr: rr.dns_type == "A", ans):
 			try:
 				a = str(arecord).split()[-1].strip()
@@ -65,7 +65,7 @@ def create_tlsa(hostname, certtype, reftype):
 						rfcs.append(rfc)
 			except:
 				pass
-	if ipv6 and transport is not "ipv4":
+	if ipv6 and transport != "ipv4":
 		for aaaarecord in filter(lambda rr: rr.dns_type == "AAAA", ans):
 			try:
 				aaaa = str(aaaarecord).split()[-1].strip()
@@ -249,22 +249,17 @@ if args.axfr:
 	# Try and AXFR it
 	if len(args.nameserver) == 0:
 		sys.exit("nameserver needed. syntax: -n nameserver")
-	resolver = ldnsx.resolver(args.nameserver[0])
-	resolver.set_dnssec(True)
-
+	resolver = ldnsx.resolver(args.nameserver[0], dnssec=True)
 	for host in args.hosts:
-		print host
 		ipv4 = []
 		ipv6 = []
 		for rr in resolver.AXFR(host):
-			print rr.dns_type(), rr.owner()
-			if rr.dns_type() == "A" and rr.owner() not in ipv4:
+			if rr.dns_type() == "A"    and rr.owner() not in ipv4:
 				ipv4.append(rr.owner())
 			if rr.dns_type() == "AAAA" and rr.owner() not in ipv6:
 				ipv6.append(rr.owner())
 	if transport != "ipv6":
 		for host in ipv4:
-			print host
 			create_tlsa(host,1,reftype)
 	if transport != "ipv4":
 		for host in ipv6:
