@@ -199,7 +199,10 @@ def draft_genTLSA(hostname, address, certtype, reftype):
 
 def rfc_genTLSA(hostname, address, certtype, reftype):
 	try:
-		conn = socket.socket()
+		if ":" in address:
+			conn = socket.socket(socket.AF_INET6)
+		else:
+			conn = socket.socket(socket.AF_INET)
 		conn.connect((address, 443))
 	except socket.error, msg:
 		conn = None
