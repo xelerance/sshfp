@@ -161,7 +161,10 @@ def draft_genTLSA(hostname, address, certtype, reftype):
 	# We don't use ssl.get_server_certificate because it does not support IPv6, and it converts DER to PEM, which
 	# we would just have to convert back to DER using ssl.PEM_cert_to_DER_cert()
 	try:
-		conn = socket.socket()
+		if ":" in address:
+			conn = socket.socket(socket.AF_INET6)
+		else:
+			conn = socket.socket(socket.AF_INET)
 		conn.connect((address, 443))
 	except socket.error, msg:
 		conn  = None

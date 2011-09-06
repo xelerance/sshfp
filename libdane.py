@@ -76,7 +76,11 @@ def get_cert(hostname, address):
 	# We don't use ssl.get_server_certificate because it does not support IPv6, and it converts DER to PEM, which
 	# we would just have to convert back to DER using ssl.PEM_cert_to_DER_cert()
 	try:
-		conn = socket.socket()
+		# kinda ugly kludge
+		if ":" in address:
+			conn = socket.socket(socket.AF_INET6)
+		else:
+			conn = socket.socket(socket.AF_INET)
 		conn.connect((address, 443))
 	except socket.error as e:
 		raise Exception("%s (%s): %s"%(hostname, address, str(e)))
