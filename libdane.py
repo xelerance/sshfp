@@ -90,19 +90,19 @@ def get_cert(hostname, address):
 		else:
 			conn = socket.socket(socket.AF_INET)
 		conn.connect((address, 443))
-	except socket.error as e:
+	except socket.error , e:
 		#raise Exception("%s (%s): %s"%(hostname, address, str(e)))
 		print >> sys.stderr, "%s (%s): %s"%(hostname, address, str(e))
 		return
 	try:
 		sock = ssl.wrap_socket(conn)
-	except ssl.SSLError as e:
+	except ssl.SSLError , e:
 		#raise Exception("%s (%s): %s"%(hostname, address, str(e)))
 		print >> sys.stderr, "%s (%s): %s"%(hostname, address, str(e))
 		return
 	try:
 		dercert = sock.getpeercert(True)
-	except AttributeError as e:
+	except AttributeError , e:
 		#print >> sys.stderr, "%s (%s): %s"%(hostname, address, str(e))
 		return
 	sock.close()
