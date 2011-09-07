@@ -1,6 +1,6 @@
 Summary: Generate RFC-4255 SSHFP DNS records from knownhosts files or ssh-keyscan
 Name: sshfp
-Version: 1.2.0
+Version: 1.2.2
 Release: 1%{?dist}
 License: GPL
 Url:  http://www.xelerance.com/software/%{name}/
@@ -9,7 +9,7 @@ Group: Applications/Internet
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
 #Only to regenerate the man page
 #Buildrequires: xmlto
-Requires: python-dns, openssh-clients >= 4, python-argparse
+Requires: python-dns, openssh-clients >= 4, python-argparse, ldns-python >= 1.6.10
 BuildArch: noarch
 
 %description
