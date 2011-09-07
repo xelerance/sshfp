@@ -90,18 +90,18 @@ else:
 	reftype=1
 
 if args.quiet:
-	libdane.quiet = True
+	quiet = True
 
 if args.tlsa:
 	args.eecert = True
 
 if args.insecure:
-	libdane.secure = False
+	secure = False
 
 if args.ipv4 and not args.ipv6:
-	libdane.transport = "ipv4"
+	transport = "ipv4"
 if args.ipv6 and not args.ipv4:
-	libdane.transport = "ipv6"
+	transport = "ipv6"
 
 # filter the non-options arguments for an "@argument" and convert it for the axfr option.
 filterHost= []
@@ -114,11 +114,11 @@ for host in args.hosts:
 		args.axfr=True
 	
 if args.rfc and args.draft:
-	libdane.fmt = "both"
+	fmt = "both"
 elif args.rfc:
-	libdane.fmt = "rfc"
+	fmt = "rfc"
 else:
-	libdane.fmt = "draft"
+	fmt = "draft"
 
 if not args.hosts:
 	sys.exit("Host are needed.")
@@ -129,7 +129,7 @@ for host in args.hosts:
 		host += "."
 if not args.axfr:
 	for host in args.hosts:
-		print libdane.create_tlsa(host,1,reftype)
+		print create_tlsa(host,1,reftype)
 if args.axfr:
 	# Try and AXFR it
 	if len(args.nameserver) == 0:
@@ -145,10 +145,10 @@ if args.axfr:
 				ipv6.append(rr.owner())
 		if transport != "ipv6":
 			for host in ipv4:
-				print libdane.create_tlsa(host,1,reftype)
+				print create_tlsa(host,1,reftype)
 		if transport != "ipv4":
 			for host in ipv6:
-				print libdane.create_tlsa(host,1,reftype)
+				print create_tlsa(host,1,reftype)
 
 
 
