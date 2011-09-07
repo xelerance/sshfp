@@ -49,11 +49,12 @@ def create_tlsa(hostname, certtype, reftype):
 	drafts, rfcs = [], []
 
 	for rr in records:
-		draft = genTLSA(hostname, rr.ip(), certtype, reftype, draft=True).strip()
-		rfc = genTLSA(hostname, rr.ip(), certtype, reftype, draft=False).strip()
+		draft = genTLSA(hostname, rr.ip(), certtype, reftype, draft=True)
+		rfc = genTLSA(hostname, rr.ip(), certtype, reftype, draft=False)
 		if draft and not (draft in drafts):
-			drafts.append(draft)
-			rfcs.append(rfc)
+			drafts.append(draft.strip())
+		if rfc and not (rfc in rfcs):
+			rfcs.append(rfc.strip())
 	ret = ""
 	if not fmt == "rfc":
 		ret += "\n".join(drafts)
@@ -62,7 +63,14 @@ def create_tlsa(hostname, certtype, reftype):
 	return ret
 
 def genTLSA(hostname, address, certtype, reftype, draft=True):
-	dercert = get_cert(hostname, address)
+	try:
+		# errors will be thrown already before we get here
+		dercert = get_cert(hostname, address)
+	except:
+		return
+	if not dercert:
+		return
+
 	if certtype != 1:
 		raise Exception("Only EE-cert supported right now")
 	certhex = hashCert(reftype, dercert)
@@ -83,12 +91,20 @@ def get_cert(hostname, address):
 			conn = socket.socket(socket.AF_INET)
 		conn.connect((address, 443))
 	except socket.error as e:
-		raise Exception("%s (%s): %s"%(hostname, address, str(e)))
+		#raise Exception("%s (%s): %s"%(hostname, address, str(e)))
+		print >> sys.stderr, "%s (%s): %s"%(hostname, address, str(e))
+		return
 	try:
 		sock = ssl.wrap_socket(conn)
 	except ssl.SSLError as e:
-		raise Exception("%s (%s): %s"%(hostname, address, str(e)))
-	dercert = sock.getpeercert(True)
+		#raise Exception("%s (%s): %s"%(hostname, address, str(e)))
+		print >> sys.stderr, "%s (%s): %s"%(hostname, address, str(e))
+		return
+	try:
+		dercert = sock.getpeercert(True)
+	except AttributeError as e:
+		#print >> sys.stderr, "%s (%s): %s"%(hostname, address, str(e))
+		return
 	sock.close()
 	conn.close()
 	return dercert
