@@ -1,3 +1,6 @@
+%{!?python_sitelib: %global python_sitelib %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib()")}
+%{!?python_sitearch: %global python_sitearch %(%{__python} -c "from distutils.sysconfig import get_python_lib; print get_python_lib(1)")}
+
 Summary: Generate RFC-4255 SSHFP DNS records from knownhosts files or ssh-keyscan
 Name: sshfp
 Version: 1.2.2
@@ -28,6 +31,8 @@ make all
 rm -rf ${RPM_BUILD_ROOT}
 export DESTDIR=${RPM_BUILD_ROOT}
 make install
+mkdir -p ${RPM_BUILD_ROOT}%{python_sitelib}/
+cp daneldnsx.pyc ${RPM_BUILD_ROOT}%{python_sitelib}/
 
 %clean
 rm -rf ${RPM_BUILD_ROOT}
@@ -37,8 +42,13 @@ rm -rf ${RPM_BUILD_ROOT}
 %doc BUGS CHANGES README COPYING
 %{_bindir}/*
 %doc %{_mandir}/man1/*
+%{python_sitelib}/daneldnsx.*
 
 %changelog
+* Tue Sep 06 2011 Paul Wouters <paul@xelerance.com> - 1.2.2-1
+- Redone dane command with ipv6 support
+- Updated to draft-ietf-dane-protocol-10
+
 * Tue Apr 12 2011 Paul Wouters <paul@xelerance.com> - 1.2.0-1
 - Released 1.2.0.
 - Added the dane command
