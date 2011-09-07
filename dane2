@@ -11,7 +11,10 @@
 try:
 	import sys
 	import libdane
-	import ldnsx
+	try:
+		import ldnsx
+	except:
+		import daneldnsx
 	import argparse
 except ImportError as e:
 	module = str(e)[16:]
