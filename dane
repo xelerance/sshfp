@@ -247,7 +247,7 @@ def main(argv=None):
 		argv = sys.argv
 		
 	# create the parser
-	parser = argparse.ArgumentParser(description='Create TLS related DNS records for hosts or an entire zone. version 1.2.1')
+	parser = argparse.ArgumentParser(description='Create TLS related DNS records for hosts or an entire zone. version 1.2.2')
 
 	# AXFR
 	parser.add_argument('-n', '--nameserver', metavar="nameserver", action='append', help='nameserver to query')
@@ -289,7 +289,7 @@ def main(argv=None):
 	args = parser.parse_args(argv[1:])
 
 	if args.version:
-		sys.exit("dane: version 1.2.1")
+		sys.exit("dane: version 1.2.2")
 	if not args.rfc:
 		args.draft = True
 

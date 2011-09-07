@@ -3,6 +3,7 @@ v1.2.2 (unreleased)
 - Throw errors on stderr to improve pipe usage [Ludwig Nusse]
 - openSUSE package information on import error [Ludwig Nusse]
 - Fix nameserver by IP address (ldns workaround [Chris]
+- Fix case where AAAA is found but no IPv6 is available [Paul]
 
 v1.2.1 (April 25th, 2011)
 - Fix copyright information to clearly make it is all GPLv2+ [Paul]

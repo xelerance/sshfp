@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # Generate SSHFP DNS records (RFC4255) from knownhosts files or ssh-keyscan
 # Copyright by Xelerance http://www.xelerance.com/
-# Paul Wouters <paul@xelerance.com> and Jake Appelbaum <jacob@appelbaum.net>
+# Paul Wouters <paul@xelerance.com> 
 # License: GNU GENERAL PUBLIC LICENSE Version 2 or later
 
 import os
@@ -39,13 +39,13 @@ global port
 global timeout
 global algo
 
-VERSION = "1.2.1"
+VERSION = "1.2.2"
 DEFAULT_KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
 
 def show_version():
 	print >> sys.stderr, "sshfp version: " + VERSION
 	print >> sys.stderr, "Source : http://www.xelerance.com/software/sshfp/"
-	print >> sys.stderr, "Authors:\n Paul Wouters <paul@xelerance.com>\n Jake Appelbaum <jacob@appelbaum.net>"
+	print >> sys.stderr, "Author:\n Paul Wouters <paul@xelerance.com>"
 	print >> sys.stderr, " James Brown <jbrown@yelp.com>"
 
 def create_sshfp(hostname, keytype, keyblob):

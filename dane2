@@ -1,5 +1,13 @@
 #!/usr/bin/python
 
+# dane is a tool to generate and verify HASTLS and TLSA records
+# By Paul Wouters <paul@xelerance.com> and Christopher Olah <chris@xelerance.com>
+# Copyright 2011 by Xelerance http://www.xelerance.com/
+# License: GNU GENERAL PUBLIC LICENSE Version 2 or later
+#
+# https://datatracker.ietf.org/wg/dane/charter/
+# https://datatracker.ietf.org/doc/draft-ietf-dane-protocol/ 
+
 try:
 	import sys
 	import libdane
@@ -55,7 +63,7 @@ parser.add_argument('hosts', metavar="hostname", nargs='+')
 args = parser.parse_args(sys.argv[1:])
 
 if args.version:
-	sys.exit("dane: version 1.2.1")
+	sys.exit("dane: version 1.2.2")
 if not args.rfc:
 	args.draft = True
 
