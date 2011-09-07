@@ -1,4 +1,4 @@
-v1.2.2 (unreleased)
+v1.2.2 (Sep 6, 2011)
 - Fix -4 / -6 flags [Chris]
 - Throw errors on stderr to improve pipe usage [Ludwig Nusse]
 - openSUSE package information on import error [Ludwig Nusse]
