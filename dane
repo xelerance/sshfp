@@ -1,220 +1,140 @@
 #!/usr/bin/python
-#
+
 # dane is a tool to generate and verify HASTLS and TLSA records
-# By Paul Wouters <paul@xelerance.com> 
+# By Paul Wouters <paul@xelerance.com> and Christopher Olah <chris@xelerance.com>
 # Copyright 2011 by Xelerance http://www.xelerance.com/
 # License: GNU GENERAL PUBLIC LICENSE Version 2 or later
 #
 # https://datatracker.ietf.org/wg/dane/charter/
-# https://datatracker.ietf.org/doc/draft-ietf-dane-protocol/
+# https://datatracker.ietf.org/doc/draft-ietf-dane-protocol/ 
 
 import sys
-import getopt
 import binascii
 import ssl, socket
 import hashlib
+import warnings
 
 try:
+	import ldnsx
+except:
+	import daneldnsx as ldnsx
+
+try:
+	import sys
 	import argparse
-except ImportError:
-	print >> sys.stderr, "dane requires the python-argparse"
-	print >> sys.stderr, "Fedora/CentOS: yum install python-argparse"
-	print >> sys.stderr, "Debian/Ubuntu: apt-get install python-argparse"
-	print >> sys.stderr, "openSUSE: zypper in python-argparse"
+except ImportError , e:
+	module = str(e)[16:]
+	print >> sys.stderr, "dane requires the python module " + module
+	if module in ["argparse", "ipcalc", "ldns"]:
+		print >> sys.stderr, "Fedora/CentOS: yum install " \
+                   + {"argparse":"python-argparse", "ipcalc": "python-ipcalc", "ldns": "ldns-python"}
+		print >> sys.stderr, "Debian/Ubuntu: apt-get install " \
+                   + {"argparse":"python-argparse", "ipcalc": "python-ipcalc", "ldns": "python-ldns"}
+		print >> sys.stderr, "openSUSE: zypper in " \
+                   + {"argparse":"python-argparse", "ipcalc": "python-ipcalc", "ldns": "python-ldns"}
 	sys.exit(1)
-
-try:
-	import ipcalc
-except ImportError:
-	print >> sys.stderr, "dane requires the python-ipcalc"
-	print >> sys.stderr, "Fedora/CentOS: yum install python-ipcalc"
-	print >> sys.stderr, "Debian/Ubuntu: apt-get install python-ipcalc"
-	print >> sys.stderr, "openSUSE: zypper in python-ipcalc"
-	sys.exit(1)
-
-# We want ldns for AD flag support - maybe we will add libunbound later to not need to depend on
-# DNSSEC capable resolver in /etc/resolv.conf
-try:
-	import ldns
-except ImportError:
-	print >> sys.stderr, "dane requires the ldns-python sub-package from http://www.nlnetlabs.nl/projects/ldns/"
-	print >> sys.stderr, "Fedora/CentOS: yum install ldns-python"
-	print >> sys.stderr, "Debian/Ubuntu: apt-get install python-ldns"
-	print >> sys.stderr, "openSUSE: zypper in python-ldns"
-	sys.exit(1)
-
-
-global fmt
-global secure
-global transport
-secure = True
-transport = "both"
-global quiet
-quiet = False
-
-# return 4 or 6 for a valid ip in that family, 0 otherwise
-# This supports ipv6 including short notation (eg "::")
-def isValidIP(ipaddr):
-	try:
-		bits = len(ipcalc.IP(ipaddr).bin())
-	except:
-		return 0
-	if bits == 32:
-		return 4
-	elif bits == 128:
-		return 6
-	else:
-		return 0
 
 def create_txt(hostname, pubkey):
-	""" Kaminsky / Gilmore type TLS pubkey in TXT RRtype """
+	""" Kaminsky / Gilmore type TLS pubkey in TXT RRtype -- testing version"""
+	warnings.warn("create_txt is untested...")
+	hashobj = hashlib.sha1() #Are there other valid hashes?
+	hashobj.update(pubkey) #Should we try and get the pubkey ourselves, like in create_TLSA?
+	result = hashobj.hexdigest().upper()
+	return "%s IN TXT \"v=key1 ha=sha1 h=%s\"" % (hostname, result)
 
 def create_hastls(hostname, fallback_default, services):
 	""" Creates a HASTLS RRtype """
 
-def ldns_lookup(hostname):
-	global secure
-	global quiet
-	# do ldns work, complain if no AD bit
-	resolver = ldns.ldns_resolver.new_frm_file("/etc/resolv.conf")
-	resolver.set_dnssec(True)
-	pkt = resolver.query(hostname, ldns.LDNS_RR_TYPE_ANY, ldns.LDNS_RR_CLASS_IN)
-	if pkt.get_rcode() is ldns.LDNS_RCODE_SERVFAIL:
-		print >> sys.stderr, "%s lookup failed (server error or dnssec validation failed)"%name
-		print >> sys.stderr, "use --insecure to bypass dnssec validation - NOT RECOMMENDED!!"
-		sys.exit(1)
-	if pkt.get_rcode() is ldns.LDNS_RCODE_NXDOMAIN:
-		if pkt.ad():
-			confidence = "(non-existence proven by DNSSEC)"
-		else:
-			confidence = ""
-		sys.exit("%s lookup failed %s"%(hostname,confidence))
-	if pkt.get_rcode() is ldns.LDNS_RCODE_NOERROR:
-		if not pkt.ad():
-			if secure:
-				sys.exit("Aborted: dnssec required but DNS lookup was insecure (use --insecure to override)\n")
-			else:
-				if quiet:
-					print >> sys.stderr, "Warning: dnssec requested but not available"
-	else:
-		sys.exit("unknown ldns error, aborted")
+def checkExistingTLSA(hostname, certtype, reftype):
+	""" check if a TLSA record already exists, to compare and notify if update is needed 
+	    UNTESTED!!!! """
+	
+	warnings.warn("checkExistingTLSA is untested...")
+	res = ldnsx.resolver() #Get the appropriate resource records...
+	pkt = res.query(hostname, "TYPE65468", tries = 3)
+	pres_TLSAs=set(pkt.answer(rr_type="TYPE65468"))
+	pres_TLSAs = map(lambda rr: str(rr).strip(), pres_TLSAs)
+	
+	TLSAs = set(create_TLSAs(hostname, certtype,reftype).split('\n'))
+	
+	return TLSAs == pres_TLSAs # are things the same as before?
+	
 
-	return pkt
+def checkExistingHASTLS(address):
+	""" check if a HASTLS record already exists, to compare and notify if update is needed """
+
 
 def create_tlsa(hostname, certtype, reftype):
-	global fmt
-	global secure
-	global transport
-
-	if not (fmt in ( "rfc","draft", "both")):
-		fmt = "draft"
-
 	"""Creates a TLSA RRtype"""
 	""" get all A/AAAA records for hostname """
-	pkt = ldns_lookup(hostname)
-	# we now have a valid answer, CNAME's got expanded, so we have one or more A/AAAA records
-	ipv4 = pkt.rr_list_by_type(ldns.LDNS_RR_TYPE_A, ldns.LDNS_SECTION_ANSWER)
-	ipv6 = pkt.rr_list_by_type(ldns.LDNS_RR_TYPE_AAAA, ldns.LDNS_SECTION_ANSWER)
-	drafts = []
-	rfcs = []
+	if secure:
+		pkt = ldnsx.secure_query(hostname, "ANY", flex=True)
+	else:
+		pkt = ldnsx.query(hostname, "ANY")
+	records = pkt.answer( rr_type = { "ipv4":"A",  "ipv6":"AAAA",  "both":"A|AAAA" }[transport] )
 
-	if ipv4 and transport != "ipv6":
-		for arecord in ipv4.rrs():
-			try:
-				a = str(arecord).split()[-1].strip()
-				v4TLSA = draft_genTLSA(hostname, a, certtype, reftype)
-				if v4TLSA:
-					rfcv4TLSA = rfc_genTLSA(hostname, a, certtype, reftype)
-					draft =  v4TLSA.strip()
-					rfc  =  rfcv4TLSA.strip()
-					if draft and not (draft in drafts):
-						drafts.append(draft)
-						rfcs.append(rfc)
-			except:
-				pass
-	if ipv6 and transport != "ipv4":
-		for aaaarecord in ipv6.rrs():
-			try:
-				aaaa = str(aaaarecord).split()[-1].strip()
-				v6TLSA = draft_genTLSA(hostname, aaaa, certtype, reftype)
-				if v6TLSA:
-					rfcv6TLSA = rfc_genTLSA(hostname, aaaa, certtype, reftype)
-					draft =  v6TLSA.strip()
-					rfc  =  rfcv6TLSA.strip()
-					if draft and not (draft in drafts):
-						drafts.append(draft)
-						rfcs.append(rfc)
-			except:
-				pass
+	drafts, rfcs = [], []
 
-	if rfcs:
-		if not fmt == "rfc":
-			print "%s"%("\n".join(drafts))
-	if drafts:
-		if not fmt == "draft":
-			print "%s"%("\n".join(rfcs))
+	for rr in records:
+		draft = genTLSA(hostname, rr.ip(), certtype, reftype, draft=True)
+		rfc = genTLSA(hostname, rr.ip(), certtype, reftype, draft=False)
+		if draft and not (draft in drafts):
+			drafts.append(draft.strip())
+		if rfc and not (rfc in rfcs):
+			rfcs.append(rfc.strip())
+	ret = ""
+	if not fmt == "rfc":
+		ret += "\n".join(drafts)
+	if not fmt == "draft":
+		ret += "\n".join(rfcs)
+	return ret
 
-# return the record
-def draft_genTLSA(hostname, address, certtype, reftype):
-	global quiet
+def genTLSA(hostname, address, certtype, reftype, draft=True):
+	try:
+		# errors will be thrown already before we get here
+		dercert = get_cert(hostname, address)
+	except:
+		return
+	if not dercert:
+		return
 
+	if certtype != 1:
+		raise Exception("Only EE-cert supported right now")
+	certhex = hashCert(reftype, dercert)
+	if draft:
+		# octet length is half of the string length; remember certtype and reftype are part of the length so +2
+		return "_443._tcp.%s IN TYPE65468 \# %s 0%s0%s%s"%(hostname, len(certhex)/2+2, certtype, reftype, certhex )
+	else:
+		return "_443._tcp.%s IN TLSA %s %s %s"%(hostname, certtype, reftype, certhex)
+
+def get_cert(hostname, address):
 	# We don't use ssl.get_server_certificate because it does not support IPv6, and it converts DER to PEM, which
 	# we would just have to convert back to DER using ssl.PEM_cert_to_DER_cert()
 	try:
+		# kinda ugly kludge
 		if ":" in address:
 			conn = socket.socket(socket.AF_INET6)
 		else:
 			conn = socket.socket(socket.AF_INET)
 		conn.connect((address, 443))
-	except socket.error, msg:
-		conn  = None
-		if not quiet:
-			print "%s (%s): %s"%(hostname, address,msg)
+	except socket.error , e:
+		#raise Exception("%s (%s): %s"%(hostname, address, str(e)))
+		print >> sys.stderr, "%s (%s): %s"%(hostname, address, str(e))
 		return
 	try:
 		sock = ssl.wrap_socket(conn)
-	except ssl.SSLError, msg:
-		if not quiet:
-			print "%s (%s): %s"%(hostname, address,msg)
+	except ssl.SSLError , e:
+		#raise Exception("%s (%s): %s"%(hostname, address, str(e)))
+		print >> sys.stderr, "%s (%s): %s"%(hostname, address, str(e))
 		return
-	dercert = sock.getpeercert(True)
-	sock.close()
-	conn.close()
-
-	if certtype != 1:
-		print >> sys.stderr, "Only EE-cert supported right now"
-	# octet length is half of the string length
-	if reftype == 0:
-		certhex = binascii.b2a_hex(dercert).upper()
-		return "_443._tcp.%s IN TYPE65468 \# %s 0%s0%s%s"%(hostname,len(certhex)/2+2,certtype,reftype, certhex)
-	if reftype == 1:
-		# sha256
-		data_length = 32
-	if reftype == 2:
-		# sha512
-		data_length = 64
-	# certtype and reftype are part of the length
-	data_length += 2  
-	return "_443._tcp.%s IN TYPE65468 \# %s 0%s0%s%s"%(hostname,data_length,certtype,reftype, hashCert(reftype,dercert))
-
-def rfc_genTLSA(hostname, address, certtype, reftype):
 	try:
-		if ":" in address:
-			conn = socket.socket(socket.AF_INET6)
-		else:
-			conn = socket.socket(socket.AF_INET)
-		conn.connect((address, 443))
-	except socket.error, msg:
-		conn = None
-		print "%s (%s): %s"%(hostname, address,msg)
+		dercert = sock.getpeercert(True)
+	except AttributeError , e:
+		#print >> sys.stderr, "%s (%s): %s"%(hostname, address, str(e))
 		return
-	sock = ssl.wrap_socket(conn)
-	dercert = sock.getpeercert(True)
 	sock.close()
 	conn.close()
-	if certtype != 1:
-		print >> sys.stderr, "Only EE-cert supported right now"
-	return "_443._tcp.%s IN TLSA %s %s %s"%(hostname, certtype, reftype, hashCert(reftype,dercert))
+	return dercert
 
 # take PEM encoded EE-cert and DER encode it, then sha256 it
 def hashCert(reftype,certblob):
@@ -230,173 +150,120 @@ def hashCert(reftype,certblob):
 		return 0
 	return hashobj.hexdigest().upper()
 
+secure, transport, quiet, fmt = True, "both", False, "draft"
 
-def checkExistingTLSA(address):
-	""" check if a TLSA record already exists, to compare and notify if update is needed """
+# create the parser
+parser = argparse.ArgumentParser(description='Create TLS related DNS records for hosts or an entire zone. version 1.2.1')
 
-def checkExistingHASTLS(address):
-	""" check if a HASTLS record already exists, to compare and notify if update is needed """
+# AXFR
+parser.add_argument('-n', '--nameserver', metavar="nameserver", action='append', help='nameserver to query')
+parser.add_argument('--axfr', action='store_true', help='use AXFR (all A/AAAA records will be scanned)')
 
-def main(argv=None):
-	global fmt
-	global secure
-	global transport
-	global quiet
+# IETF status related, currently --draft is the default
+parser.add_argument('--draft', action='store_true',help='output in draft private rrtype (65468/65469) format (default)')
+parser.add_argument('--rfc', action='store_true',help='output in rfc (TLSA/HASTLS) rrtype format')
 
-	if argv is None:
-		argv = sys.argv
-		
-	# create the parser
-	parser = argparse.ArgumentParser(description='Create TLS related DNS records for hosts or an entire zone. version 1.2.1')
+# TLSA related	
+parser.add_argument('--tlsa', action='store_true',help='generate TLSA record (default:yes)')
+parser.add_argument('--eecert', action='store_true',help='use EEcert for TLSA record (default)')
+parser.add_argument('--cacert', action='store_true',help='use CAcert for TLSA record (not supported yet)')
+parser.add_argument('--pubkey', action='store_true',help='use pubkey for TLSA record (not supported yet)')
+parser.add_argument('--txt', action='store_true',help='generate Kaminsky style TXT record (not supported yet)')
 
-	# AXFR
-	parser.add_argument('-n', '--nameserver', metavar="nameserver", action='append', help='nameserver to query')
-	parser.add_argument('--axfr', action='store_true', help='use AXFR (all A/AAAA records will be scanned)')
-	# IETF status related, currently --draft is the default
-	parser.add_argument('--draft', action='store_true',help='output in draft private rrtype (65468/65469) format (default)')
-	parser.add_argument('--rfc', action='store_true',help='output in rfc (TLSA/HASTLS) rrtype format')
+parser.add_argument('--sha256', action='store_true',help='use SHA256 for the TLSA cert type')
+parser.add_argument('--sha512', action='store_true',help='use SHA512 for the TLSA cert type')
+parser.add_argument('--full', action='store_true',help='use full certificate for the TLSA cert type')
+
+# allow non-dnssec answers
+parser.add_argument('--insecure', action='store_true',help='allow use of non-dnssec answers to find SSL hosts')
+
+# limit networking to ipv4 or ipv6 only
+parser.add_argument('-4', dest='ipv4', action='store_true',help='use ipv4 networking only')
+parser.add_argument('-6', dest='ipv6', action='store_true',help='use ipv6 networking only')
+parser.add_argument('-q', '--quiet', action='store_true',help='suppress warnings and errors')
+parser.add_argument('-v', '--version', action='store_true',help='show version and exit')
+
+# finally, the host list
+parser.add_argument('hosts', metavar="hostname", nargs='+')
+
+args = parser.parse_args(sys.argv[1:])
+
+if args.version:
+	sys.exit("dane: version 1.2.2")
+if not args.rfc:
+	args.draft = True
+
+if args.cacert:
+	sys.exit("TLSA CAcert type record not yet supported")
+if args.pubkey:
+	sys.exit("TLSA Pubkey type record not yet supported")
+
+if args.sha512:
+	reftype=2
+elif args.full:
+	reftype=0
+else:
+	reftype=1
+
+if args.quiet:
+	quiet = True
+
+if args.tlsa:
+	args.eecert = True
+
+if args.insecure:
+	secure = False
+
+if args.ipv4 and not args.ipv6:
+	transport = "ipv4"
+if args.ipv6 and not args.ipv4:
+	transport = "ipv6"
+
+# filter the non-options arguments for an "@argument" and convert it for the axfr option.
+filterHost= []
+if not args.nameserver:
+	args.nameserver = []
+for host in args.hosts:
+	if host[0] == "@":
+		args.nameserver.append(host[1:])
+		args.hosts.remove(host)
+		args.axfr=True
 	
-	# HASTLS related
-	# parser.add_argument('--hastls', action='store_true',help='generate HASTLS record')
-	# parser.add_argument('--service', nargs='+', metavar="<service|port>", action='append',
-	# 	help='add service without fallback to insecure')
-	# parser.add_argument('--fallback', nargs='+', metavar="<service|port>", action='append',
-	#	help='add service with fallback to insecure')
+if args.rfc and args.draft:
+	fmt = "both"
+elif args.rfc:
+	fmt = "rfc"
+else:
+	fmt = "draft"
 
-	# TLSA related	
-	parser.add_argument('--tlsa', action='store_true',help='generate TLSA record (default:yes)')
-	parser.add_argument('--eecert', action='store_true',help='use EEcert for TLSA record (default)')
-	parser.add_argument('--cacert', action='store_true',help='use CAcert for TLSA record')
-	parser.add_argument('--pubkey', action='store_true',help='use pubkey for TLSA record (not supported yet)')
-	parser.add_argument('--txt', action='store_true',help='generate Kaminsky style TXT record (not supported yet)')
-	parser.add_argument('--sha256', action='store_true',help='use SHA256 for the TLSA cert type')
-	parser.add_argument('--sha512', action='store_true',help='use SHA512 for the TLSA cert type')
-	parser.add_argument('--full', action='store_true',help='use full certificate for the TLSA cert type')
+if not args.hosts:
+	sys.exit("Host are needed.")
+#	main("--help")
 
-	# allow non-dnssec answers
-	parser.add_argument('--insecure', action='store_true',help='allow use of non-dnssec answers to find SSL hosts')
-
-	# limit networking to ipv4 or ipv6 only
-	parser.add_argument('-4', dest='ipv4', action='store_true',help='use ipv4 networking only')
-	parser.add_argument('-6', dest='ipv6', action='store_true',help='use ipv6 networking only')
-
-	parser.add_argument('-q', '--quiet', action='store_true',help='suppress warnings and errors')
-	parser.add_argument('-v', '--version', action='store_true',help='show version and exit')
-
-	# finally, the host list
-	parser.add_argument('hosts', metavar="hostname", nargs='+')
-
-	args = parser.parse_args(argv[1:])
-
-	if args.version:
-		sys.exit("dane: version 1.2.1")
-	if not args.rfc:
-		args.draft = True
-
-	if args.cacert:
-		sys.exit("TLSA CAcert type record not yet supported")
-	if args.pubkey:
-		sys.exit("TLSA Pubkey type record not yet supported")
-	if args.sha512:
-		reftype=2
-	elif args.full:
-		reftype=0
-	else:
-		reftype=1
-
-	if args.quiet:
-		quiet = True
-
-	if args.tlsa:
-		args.eecert = True
-
-	if args.insecure:
-		secure = False
-
-	if args.ipv4 and not args.ipv6:
-		transport = "ipv4"
-	if args.ipv6 and not args.ipv4:
-		transport = "ipv6"
-
-	# filter the non-options arguments for an "@argument" and convert it for the axfr option.
-	filterHost= []
-	if not args.nameserver:
-		args.nameserver = []
+for host in args.hosts:
+	if host[-1] != ".":
+		host += "."
+if not args.axfr:
 	for host in args.hosts:
-		if host[0] == "@":
-			args.nameserver.append(host[1:])
-			args.hosts.remove(host)
-			args.axfr=True
-	
-
-	if args.rfc and args.draft:
-		fmt = "both"
-	elif args.rfc:
-		fmt = "rfc"
-	else:
-		fmt = "draft"
-
-	if not args.hosts:
-		main("--help")
-
+		print create_tlsa(host,1,reftype)
+if args.axfr:
+	# Try and AXFR it
+	if len(args.nameserver) == 0:
+		sys.exit("nameserver needed. syntax: -n nameserver")
+	resolver = ldnsx.resolver(args.nameserver[0], dnssec=True)
 	for host in args.hosts:
-		if host[-1] != ".":
-			host += "."
-	if not args.axfr:
-		for host in args.hosts:
-			create_tlsa(host,1,reftype)
-	if args.axfr:
-		# Try and AXFR it
-		resolver = ldns.ldns_resolver.new_frm_file("/etc/resolv.conf")
-		resolver.set_dnssec(True)
-		if isValidIP(args.nameserver[0]) in [4,6]:
-			#Empty nameserver: remember that we still need it to resolver when dealing with name
-			while resolver.pop_nameserver(): 
-				pass
-			addr = ldns.ldns_rdf_new_frm_str(5,args.nameserver[0])
-			if (not addr):
-				sys.exit("nameserver '%s' failed to resolve"%args.nameserver[0])
-			resolver.push_nameserver(addr)
-		else:
-			dname = ldns.ldns_dname(args.nameserver[0])
-			addr = resolver.get_addr_by_name(dname, ldns.LDNS_RR_CLASS_IN, ldns.LDNS_RD);
-			#Empty nameserver: remember that we still need it to resolver when dealing with name
-			while resolver.pop_nameserver(): 
-				pass
-			if (not addr):
-				sys.exit("nameserver '%s' failed to resolve"%args.nameserver[0])
-			#insert server addr
-			for rr in addr.rrs():
-				resolver.push_nameserver_rr(rr)
+		ipv4 = []
+		ipv6 = []
+		for rr in resolver.AXFR(host):
+			if rr.rr_type() == "A"    and rr.owner() not in ipv4:
+				ipv4.append(rr.owner())
+			if rr.rr_type() == "AAAA" and rr.owner() not in ipv6:
+				ipv6.append(rr.owner())
+		if transport != "ipv6":
+			for host in ipv4:
+				print create_tlsa(host,1,reftype)
+		if transport != "ipv4":
+			for host in ipv6:
+				print create_tlsa(host,1,reftype)
 
-		for host in args.hosts:
-			dname = ldns.ldns_dname(host)
-			status = resolver.axfr_start(dname, ldns.LDNS_RR_CLASS_IN)
-			if status != ldns.LDNS_STATUS_OK:
-				raise Exception("Can't start AXFR. Error: %s" % ldns.ldns_get_errorstr_by_id(status))
-			#Print results
-			ipv4 = []
-			ipv6 = []
-			while True:
-				rr = resolver.axfr_next()
-				if not rr:
-					break
-
-				rdf = rr.owner()
-				if rr.get_type_str() == "A":
-					if not (rdf in ipv4):
-						ipv4.append(str(rdf))
-				if rr.get_type_str() == "AAAA":
-					if not (rdf in ipv6):
-						ipv6.append(str(rdf))
-
-			if transport != "ipv6":
-				for host in ipv4:
-					create_tlsa(host,1,reftype)
-			if transport != "ipv4":
-				for host in ipv6:
-					create_tlsa(host,1,reftype)
-	
-if __name__ == "__main__":
-	sys.exit(main(sys.argv))
 

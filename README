@@ -3,7 +3,7 @@ URL		: http://www.xelerance.com/software/sshfp/
 Source		: ftp://ftp.xelerance.com/sshfp/
 License		: GPLv2+
 Mailinglist	: http://lists.xelerance.com/mailman/listinfo/sshfp/
-Authors		: Paul Wouters, Jacob Appelbaum
+Authors		: Paul Wouters, Chrisopher Olah
 Summary		: Generate RFC-4255 SSHFP DNS records from known_hosts files or ssh-keyscan
 
 sshfp generates DNS SSHFP records from SSH public keys. sshfp can take
