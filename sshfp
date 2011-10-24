@@ -258,7 +258,7 @@ def main():
 			action="store",
 			dest="known_hosts",
 			metavar="KNOWN_HOSTS_FILE",
-			default=None,
+			default=DEFAULT_KNOWN_HOSTS_FILE,
 			help="obtain public ssh keys from the known_hosts file KNOWN_HOSTS_FILE")
 	parser.add_option("-s", "--scan", 
 			action="store_true",
@@ -339,11 +339,9 @@ def main():
 		sys.exit(1)
 	if not options.scan and options.all_hosts and args:
 		print >> sys.stderr, "WARNING: -a and hosts both passed, ignoring manual host list"
-	if not args:
+	if not args and (not all_hosts):
 		print >> sys.stderr, "WARNING: Assuming -a"
 		all_hosts = True
-	if not options.scan:
-		khfile = DEFAULT_KNOWN_HOSTS_FILE
 
 	if options.scan and options.all_hosts:
 		datal = []
