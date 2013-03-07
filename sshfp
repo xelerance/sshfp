@@ -53,11 +53,12 @@ def create_sshfp(hostname, keytype, keyblob):
 
 	if keytype == "ssh-rsa":
 		keytype = "1"
+	elif  keytype == "ssh-dss":
+		keytype = "2"
+	elif  keytype == "ecdsa-sha2-nistp256":
+		keytype = "3"
 	else:
-		if keytype == "ssh-dss":
-			keytype = "2"
-		else:
-			return ""
+		return ""
 	try:
 		rawkey = base64.b64decode(keyblob)
 	except TypeError:
@@ -132,7 +133,7 @@ def sshfp_from_file(khfile, wantedHosts):
 def check_keytype(keytype):
 	global algos
 	for algo in algos:
-		if "ssh-%s" % algo[:-1] == keytype[:-1]:
+		if "ssh-%s" % algo[:-1] == keytype[:-1]: || "ecdsa-sha2-nistp256" == keytype[:-1]:
 			return True
 	if not quiet:
 		print >> sys.stderr, "Could only find key type %s for %s" % (keytype, hostname)
@@ -322,7 +323,7 @@ def main():
 	data = ""
 	trailing = options.trailing_dot
 	timeout = options.timeout
-	algos = options.algo or ["dsa", "rsa"]
+	algos = options.algo or ["dsa", "rsa", "ecdsa"]
 	all_hosts = options.all_hosts
 	port = options.port
 	hostnames = ()
