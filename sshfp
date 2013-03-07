@@ -133,10 +133,10 @@ def sshfp_from_file(khfile, wantedHosts):
 def check_keytype(keytype):
 	global algos
 	for algo in algos:
-		if "ssh-%s" % algo[:-1] == keytype[:-1]: || "ecdsa-sha2-nistp256" == keytype[:-1]:
+		if "ssh-%s" % algo[:-1] == keytype[:-1]:
 			return True
-	if not quiet:
-		print >> sys.stderr, "Could only find key type %s for %s" % (keytype, hostname)
+		if "ecdsa" == algo and "ecdsa-sha2-nistp256" == keytype:
+			return True
 	return False
 
 def process_record(record, hostname):
@@ -302,7 +302,7 @@ def main():
 			action="append",
 			type="choice",
 			dest="algo",
-			choices=["rsa", "dsa"],
+			choices=["rsa", "dsa", "ecdsa"],
 			default=[],
 			help="key type to fetch (may be specified more than once, default dsa,rsa)")
 	parser.add_option("-n", "--nameserver",
