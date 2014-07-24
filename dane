@@ -130,7 +130,10 @@ def get_cert(hostname, address):
 		print >> sys.stderr, "%s (%s): %s"%(hostname, address, str(e))
 		return
 	try:
-		sock = ssl.wrap_socket(conn)
+		if 'HAS_SNI' in dir(ssl) and ssl.HAS_SNI:
+			sock = ssl.wrap_socket(conn, server_hostname=hostname)
+		else:
+			sock = ssl.wrap_socket(conn)
 	except ssl.SSLError , e:
 		#raise Exception("%s (%s): %s"%(hostname, address, str(e)))
 		print >> sys.stderr, "%s (%s): %s"%(hostname, address, str(e))
