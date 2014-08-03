@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # Generate SSHFP DNS records (RFC4255) from knownhosts files or ssh-keyscan
 # Copyright by Xelerance http://www.xelerance.com/
-# Paul Wouters <paul@xelerance.com> 
+# Paul Wouters <paul@xelerance.com>
 # License: GNU GENERAL PUBLIC LICENSE Version 2 or later
 # vim:set ts=2 sw=2 sts=2 noexpandtab
 
@@ -228,7 +228,7 @@ def sshfp_from_axfr(domain, nameserver):
 	for rdatas in ('A', 'AAAA'):
 		for (name, ttl, rdata) in axfr.iterate_rdatas(rdatas):
 			#print "name:" +str(name) +", ttl:"+ str(ttl)+ ", rdata:"+str(rdata)
-			if "@" in str(name): 
+			if "@" in str(name):
 				hosts.append(domain + ".")
 			else:
 				if not str(name) == "localhost":
@@ -247,7 +247,7 @@ def sshfp_from_dns(hosts):
 		print >> sys.stderr, stderr
 	khdns = stdout
 	return process_records(khdns, hosts)
-	
+
 def main():
 	global all_hosts
 	global trailing
@@ -257,13 +257,13 @@ def main():
 	global algos
 
 	parser = optparse.OptionParser()
-	parser.add_option("-k", "--knownhosts", "--known-hosts", 
+	parser.add_option("-k", "--knownhosts", "--known-hosts",
 			action="store",
 			dest="known_hosts",
 			metavar="KNOWN_HOSTS_FILE",
 			default=DEFAULT_KNOWN_HOSTS_FILE,
 			help="obtain public ssh keys from the known_hosts file KNOWN_HOSTS_FILE")
-	parser.add_option("-s", "--scan", 
+	parser.add_option("-s", "--scan",
 			action="store_true",
 			default=False,
 			dest="scan",
