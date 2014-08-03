@@ -3,6 +3,7 @@
 # Copyright by Xelerance http://www.xelerance.com/
 # Paul Wouters <paul@xelerance.com> 
 # License: GNU GENERAL PUBLIC LICENSE Version 2 or later
+# vim:set ts=2 sw=2 sts=2 noexpandtab
 
 import os
 import sys
@@ -20,6 +21,7 @@ except ImportError:
 	print >> sys.stderr, "Fedora: yum install python-dns"
 	print >> sys.stderr, "Debian: apt-get install python-dnspython   (NOT python-dns!)"
 	print >> sys.stderr, "openSUSE: zypper in python-dnspython"
+	print >> sys.stderr, "OSX: pip install dnspython"
 	sys.exit(1)
 
 try:
@@ -39,7 +41,7 @@ global port
 global timeout
 global algo
 
-VERSION = "1.2.2"
+VERSION = "1.3.0"
 DEFAULT_KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
 
 def show_version():
@@ -223,13 +225,14 @@ def sshfp_from_axfr(domain, nameserver):
 		print >> sys.stderr, "AXFR error: %s - No permission or not authorative for %s; aborting" % (nameserver, badDomain)
 		sys.exit(1)
 
-	for (name, ttl, rdata) in axfr.iterate_rdatas('A'):
-		#print "name:" +str(name) +", ttl:"+ str(ttl)+ ", rdata:"+str(rdata)
-		if "@" in str(name): 
-			hosts.append(domain + ".")
-		else:
-			if not str(name) == "localhost":
-				hosts.append("%s.%s." % (name, domain))
+	for rdatas in ('A', 'AAAA'):
+		for (name, ttl, rdata) in axfr.iterate_rdatas(rdatas):
+			#print "name:" +str(name) +", ttl:"+ str(ttl)+ ", rdata:"+str(rdata)
+			if "@" in str(name): 
+				hosts.append(domain + ".")
+			else:
+				if not str(name) == "localhost":
+					hosts.append("%s.%s." % (name, domain))
 	return sshfp_from_dns(hosts)
 
 def sshfp_from_dns(hosts):
