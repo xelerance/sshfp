@@ -314,7 +314,7 @@ def main():
 			type="int",
 			dest="port",
 			default=[22],
-			help="use PORT for scanning")
+			help="use PORT for scanning.  Can be used multiple times to scan more ports.")
 	parser.add_option("-v", "--version",
 			action="store_true",
 			dest="version",
