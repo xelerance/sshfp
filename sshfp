@@ -333,7 +333,7 @@ def main():
 	if not quiet and port != 22:
 		print >> sys.stderr, "WARNING: non-standard port numbers are not designated in SSHFP records"
 	if not quiet and options.known_hosts and options.scan:
-		print >> sys.stderr, "WARNING: Ignoring -k option, -s was passwd"
+		print >> sys.stderr, "WARNING: Ignoring -k option, -s was passed"
 	if options.nameserver and not options.scan and not options.all_hosts:
 		print >> sys.stderr, "ERROR: Cannot specify -n without -s and -a"
 		sys.exit(1)
