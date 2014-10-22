@@ -22,13 +22,12 @@ except ImportError:
 	print >> sys.stderr, "openSUSE: zypper in python-dnspython"
 	sys.exit(1)
 
+ishashlib = False
 try:
 	import hashlib
-	digest = hashlib.sha1
+	ishashlib = True
 except ImportError:
 	import sha
-	digest = sha.new
-
 
 global all_hosts
 global khfile
@@ -38,6 +37,7 @@ global quiet
 global port
 global timeout
 global algo
+global fphashes
 
 VERSION = "1.2.2"
 DEFAULT_KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
@@ -48,22 +48,34 @@ def show_version():
 	print >> sys.stderr, "Author:\n Paul Wouters <paul@xelerance.com>"
 	print >> sys.stderr, " James Brown <jbrown@yelp.com>"
 
-def create_sshfp(hostname, keytype, keyblob):
+def create_sshfp(hostname, keytype, keyblob, fphash):
 	"""Creates an SSH fingerprint"""
 
 	if keytype == "ssh-rsa":
 		keytype = "1"
+	elif  keytype == "ssh-dss":
+		keytype = "2"
+	elif  keytype == "ecdsa-sha2-nistp256":
+		keytype = "3"
 	else:
-		if keytype == "ssh-dss":
-			keytype = "2"
-		else:
-			return ""
+		return ""
 	try:
 		rawkey = base64.b64decode(keyblob)
 	except TypeError:
 		print >> sys.stderr, "FAILED on hostname "+hostname+" with keyblob "+keyblob
 		return "ERROR"
-	fpsha1 = digest(rawkey).hexdigest().upper()
+
+	hashcode = "1"
+	if ishashlib:
+		if fphash == "sha2":
+		  digest = hashlib.sha256
+		  hashcode = "2"
+		else:
+		  digest = hashlib.sha1
+	else:
+		digest = sha.new
+	fp = digest(rawkey).hexdigest().upper()
+
 	# check for Reverse entries
 	reverse = 1
 	parts = hostname.split(".", 3)
@@ -78,7 +90,7 @@ def create_sshfp(hostname, keytype, keyblob):
 	if trailing and not reverse:
 		if hostname[-1:] != ".":
 			hostname = hostname + "."
-	return hostname + " IN SSHFP " + keytype + " 1 " + fpsha1
+	return hostname + " IN SSHFP " + keytype + " " + hashcode + " " + fp
 
 def get_known_host_entry(known_hosts, host):
 	"""Get a single entry out of a known_hosts file
@@ -134,19 +146,26 @@ def check_keytype(keytype):
 	for algo in algos:
 		if "ssh-%s" % algo[:-1] == keytype[:-1]:
 			return True
-	if not quiet:
-		print >> sys.stderr, "Could only find key type %s for %s" % (keytype, hostname)
+		if "ecdsa" == algo and "ecdsa-sha2-nistp256" == keytype:
+			return True
 	return False
 
 def process_record(record, hostname):
+	global fphashes
+	all_records = []
 	(host, keytype, key) = record.split(" ")
 	key = key.rstrip()
 	if check_keytype(keytype):
-		record = create_sshfp(hostname, keytype, key)
-		return record
-	return ""
+		for fphash in fphashes: 
+			  all_records.append(create_sshfp(host, keytype, key, fphash))
+	if all_records:
+		all_records.sort()
+		return "\n".join(all_records)
+	else:
+		return ""
 
 def process_records(data, hostnames):
+	global fphashes
 	"""Process all records in a string.
 
 	If the global "all_hosts" is True, then return SSHFP entries
@@ -155,6 +174,7 @@ def process_records(data, hostnames):
 	If "all_hosts is False and hostnames is non-empty, return
 	only the items in hostnames
 	"""
+	
 	all_records = []
 	for record in data.split("\n"):
 		if record.startswith("#") or not record:
@@ -170,7 +190,8 @@ def process_records(data, hostnames):
 		if all_hosts or host in hostnames or host == hostnames:
 			if not check_keytype(keytype):
 				continue
-			all_records.append(create_sshfp(host, keytype, key))
+			for fphash in fphashes: 
+			  all_records.append(create_sshfp(host, keytype, key, fphash))
 	if all_records:
 		all_records.sort()
 		return "\n".join(all_records)
@@ -252,6 +273,7 @@ def main():
 	global port
 	global timeout
 	global algos
+	global fphashes
 
 	parser = optparse.OptionParser()
 	parser.add_option("-k", "--knownhosts", "--known-hosts", 
@@ -301,7 +323,7 @@ def main():
 			action="append",
 			type="choice",
 			dest="algo",
-			choices=["rsa", "dsa"],
+			choices=["rsa", "dsa", "ecdsa"],
 			default=[],
 			help="key type to fetch (may be specified more than once, default dsa,rsa)")
 	parser.add_option("-n", "--nameserver",
@@ -310,6 +332,13 @@ def main():
 			dest="nameserver",
 			default="",
 			help="nameserver to use for AXFR (only valid with -s -a)")
+	parser.add_option("-H", "--hashfunction", 
+			action="append",
+			type="choice",
+			dest="fphashes",
+			choices=["sha1", "sha2"],
+			default=[],
+			help="Hash function to use, default sha1,sha2")
 	(options, args) = parser.parse_args()
 
 	# parse options
@@ -322,9 +351,10 @@ def main():
 	data = ""
 	trailing = options.trailing_dot
 	timeout = options.timeout
-	algos = options.algo or ["dsa", "rsa"]
+	algos = options.algo or ["dsa", "rsa", "ecdsa"]
 	all_hosts = options.all_hosts
 	port = options.port
+	fphashes = options.fphashes or ["sha1", "sha2"]
 	hostnames = ()
 
 	if options.version:
@@ -342,6 +372,9 @@ def main():
 	if not args and (not all_hosts):
 		print >> sys.stderr, "WARNING: Assuming -a"
 		all_hosts = True
+	if not ishashlib and "sha2" in options.fphashes:
+		print >> sys.stderr, "WARNING: Hashlib not supported, ignoring -H sha2"
+		fphashes = ["sha1"]
 
 	if options.scan and options.all_hosts:
 		datal = []
