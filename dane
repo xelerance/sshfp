@@ -64,13 +64,21 @@ def checkExistingHASTLS(address):
 	""" check if a HASTLS record already exists, to compare and notify if update is needed """
 
 
-def create_tlsa(hostname, certtype, reftype):
+def create_tlsa(hostname, certtype, reftype, dnshostname=None):
 	"""Creates a TLSA RRtype"""
 	""" get all A/AAAA records for hostname """
+	if not dnshostname:
+		dnshostname = hostname
 	if secure:
-		pkt = ldnsx.secure_query(hostname, "ANY", flex=True)
+		pkt = ldnsx.secure_query(dnshostname, "ANY", flex=True)
 	else:
-		pkt = ldnsx.query(hostname, "ANY")
+		pkt = ldnsx.query(dnshostname, "ANY")
+	cnames =  pkt.answer(rr_type="CNAME") 
+
+	if cnames:
+		# Follow CNAME
+		return create_tlsa(hostname, certtype, reftype, cnames[0][4])
+
 	records = pkt.answer( rr_type = { "ipv4":"A",  "ipv6":"AAAA",  "both":"A|AAAA" }[transport] )
 
 	drafts, rfcs = [], []
@@ -122,7 +130,10 @@ def get_cert(hostname, address):
 		print >> sys.stderr, "%s (%s): %s"%(hostname, address, str(e))
 		return
 	try:
-		sock = ssl.wrap_socket(conn)
+		if 'HAS_SNI' in dir(ssl) and ssl.HAS_SNI:
+			sock = ssl.wrap_socket(conn, server_hostname=hostname)
+		else:
+			sock = ssl.wrap_socket(conn)
 	except ssl.SSLError , e:
 		#raise Exception("%s (%s): %s"%(hostname, address, str(e)))
 		print >> sys.stderr, "%s (%s): %s"%(hostname, address, str(e))
