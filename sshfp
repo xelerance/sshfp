@@ -159,7 +159,7 @@ def process_record(record, hostname):
 	(host, keytype, key) = record.split(" ")
 	key = key.rstrip()
 	if check_keytype(keytype):
-		for fphash in fphashes: 
+		for fphash in fphashes:
 			  all_records.append(create_sshfp(host, keytype, key, fphash))
 	if all_records:
 		all_records.sort()
@@ -195,7 +195,8 @@ def process_records(data, hostnames):
 				continue
 			if regexfilter:
 				if regexfilter.search(str(host)):
-					all_records.append(create_sshfp(host, keytype, key))
+					for fphash in fphashes:
+						all_records.append(create_sshfp(host, keytype, key, fphash))
 				else:
 					print >> sys.stderr, "- Host excluded by regex pattern: {}".format(host)
 			else:
