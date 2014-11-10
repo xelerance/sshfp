@@ -15,16 +15,12 @@ public keys from a known_hosts file or from scanning the host's sshd daemon.
 The ssh client can use these SSHFP records if you set "VerifyHostKeyDNS yes"
 in the file /etc/ssh/ssh_config or ~/.ssh/config. See RFC-4255
 
-# Differences from upstream
+When using the AXFR method, sshfp supports:
 
-This fork has the following additional features implemented:
-
-- IPv6 AAAA host lookups
+- IPv4 A record and IPv6 AAAA host lookups
 - Support for multiple ports to be listed on the CLI
 - Regex filtering of included hosts
 - Only output unique results
-
-These are only tested when using the AFXR method and not the known_hosts file.
 
 # Requirements
 
