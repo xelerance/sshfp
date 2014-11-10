@@ -39,5 +39,5 @@ git clone git@github.com:jinnko/sshfp.git
 cd sshfp
 virtualenv -p python2.7 ./
 bin/pip install dnspython
-bin/python sshfp --port 22 --port 2022 --scan --all-hosts --regex '^(aws|do|gce)' example.com
+bin/python sshfp --port 22 --port 2022 --scan --all --regex '^(aws|do|gce)' example.com
 ```
