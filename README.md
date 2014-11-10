@@ -2,7 +2,7 @@
 
 ```
 Software	: sshfp
-URL		    : http://www.xelerance.com/software/sshfp/
+URL		: http://www.xelerance.com/software/sshfp/
 Source		: ftp://ftp.xelerance.com/sshfp/
 License		: GPLv2+
 Mailinglist	: http://lists.xelerance.com/mailman/listinfo/sshfp/
