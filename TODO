@@ -1,1 +1,2 @@
 - support ixfr with serial to allow to receive only changes since.... dig supports this option
+- support AAAA-only host records
