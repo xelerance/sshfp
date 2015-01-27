@@ -1,8 +1,9 @@
 #!/usr/bin/python
 # Generate SSHFP DNS records (RFC4255) from knownhosts files or ssh-keyscan
 # Copyright by Xelerance http://www.xelerance.com/
-# Paul Wouters <paul@xelerance.com> 
+# Paul Wouters <paul@xelerance.com>
 # License: GNU GENERAL PUBLIC LICENSE Version 2 or later
+# vim:set ts=4 sw=4 sts=4 noexpandtab
 
 import os
 import sys
@@ -10,6 +11,7 @@ import subprocess
 import optparse
 import base64
 import time
+import re
 # www.dnspython.org
 try:
 	import dns.resolver
@@ -20,6 +22,7 @@ except ImportError:
 	print >> sys.stderr, "Fedora: yum install python-dns"
 	print >> sys.stderr, "Debian: apt-get install python-dnspython   (NOT python-dns!)"
 	print >> sys.stderr, "openSUSE: zypper in python-dnspython"
+	print >> sys.stderr, "OSX: pip install dnspython"
 	sys.exit(1)
 
 ishashlib = False
@@ -39,7 +42,7 @@ global timeout
 global algo
 global fphashes
 
-VERSION = "1.2.2"
+VERSION = "1.3.0"
 DEFAULT_KNOWN_HOSTS_FILE = "~/.ssh/known_hosts"
 
 def show_version():
@@ -158,7 +161,7 @@ def process_record(record, hostname):
 	(host, keytype, key) = record.split(" ")
 	key = key.rstrip()
 	if check_keytype(keytype):
-		for fphash in fphashes: 
+		for fphash in fphashes:
 			  all_records.append(create_sshfp(host, keytype, key, fphash))
 	if all_records:
 		all_records.sort()
@@ -185,15 +188,22 @@ def process_records(data, hostnames):
 			(host, keytype, key) = record.split(" ")
 		except ValueError:
 			if not quiet:
-				print >> sys.stdout, "Print unable to read record '%s'" % record
+				print >> sys.stdout, "Unable to read record '%s'" % record
 			continue
 		if "," in host:
 			host = host.split(",")[0]
 		if all_hosts or host in hostnames or host == hostnames:
 			if not check_keytype(keytype):
 				continue
-			for fphash in fphashes: 
-			  all_records.append(create_sshfp(host, keytype, key, fphash))
+			if regexfilter:
+				if regexfilter.search(str(host)):
+					for fphash in fphashes:
+						all_records.append(create_sshfp(host, keytype, key, fphash))
+				else:
+					print >> sys.stderr, "- Host excluded by regex pattern: {}".format(host)
+			else:
+				for fphash in fphashes:
+				  all_records.append(create_sshfp(host, keytype, key, fphash))
 	if all_records:
 		all_records.sort()
 		return "\n".join(all_records)
@@ -239,6 +249,7 @@ def sshfp_from_axfr(domain, nameserver):
 			return sshfp_from_dns([domain])
 	hosts = []
 	#print "nameserver:" + str(ns)
+
 	try:
 		# print "trying axfr for "+domain+"@"+nameserver
 		axfr = get_axfr_record(domain, nameserver)
@@ -246,13 +257,14 @@ def sshfp_from_axfr(domain, nameserver):
 		print >> sys.stderr, "AXFR error: %s - No permission or not authorative for %s; aborting" % (nameserver, badDomain)
 		sys.exit(1)
 
-	for (name, ttl, rdata) in axfr.iterate_rdatas('A'):
-		#print "name:" +str(name) +", ttl:"+ str(ttl)+ ", rdata:"+str(rdata)
-		if "@" in str(name): 
-			hosts.append(domain + ".")
-		else:
-			if not str(name) == "localhost":
-				hosts.append("%s.%s." % (name, domain))
+	for rdatas in ('A', 'AAAA'):
+		for (name, ttl, rdata) in axfr.iterate_rdatas(rdatas):
+			#print "name:" +str(name) +", ttl:"+ str(ttl)+ ", rdata:"+str(rdata)
+			if "@" in str(name):
+				hosts.append(domain + ".")
+			else:
+				if not str(name) == "localhost":
+					hosts.append("%s.%s." % (name, domain))
 	return sshfp_from_dns(hosts)
 
 def sshfp_from_dns(hosts):
@@ -260,14 +272,30 @@ def sshfp_from_dns(hosts):
 	global port
 	global timeout
 	global algos
-	cmd = ["ssh-keyscan", "-p", str(port), "-T", str(timeout), "-t", ",".join(algos)] + hosts
-	process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-	(stdout, stderr) = process.communicate()
-	if not quiet:
-		print >> sys.stderr, stderr
-	khdns = stdout
+
+	hosts = sort_uniq(hosts)
+	khdns = ''
+
+	for p in port:
+		cmd = ["ssh-keyscan", "-p", str(p), "-T", str(timeout), "-t", ",".join(algos)] + hosts
+		#pp.pprint(cmd)
+		process = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+		(stdout, stderr) = process.communicate()
+		if not quiet:
+			print >> sys.stderr, stderr
+			sys.stderr.flush()
+		khdns = khdns + stdout
+
 	return process_records(khdns, hosts)
-	
+
+def sort_uniq(dlist):
+	a = []
+	for l in dlist:
+		for q in l.split('\n'):
+			if not str(q) in a:
+				a.append(str(q))
+	return sorted(a)
+
 def main():
 	global all_hosts
 	global trailing
@@ -275,16 +303,17 @@ def main():
 	global port
 	global timeout
 	global algos
+	global regexfilter
 	global fphashes
 
 	parser = optparse.OptionParser()
-	parser.add_option("-k", "--knownhosts", "--known-hosts", 
+	parser.add_option("-k", "--knownhosts", "--known-hosts",
 			action="store",
 			dest="known_hosts",
 			metavar="KNOWN_HOSTS_FILE",
 			default=DEFAULT_KNOWN_HOSTS_FILE,
 			help="obtain public ssh keys from the known_hosts file KNOWN_HOSTS_FILE")
-	parser.add_option("-s", "--scan", 
+	parser.add_option("-s", "--scan",
 			action="store_true",
 			default=False,
 			dest="scan",
@@ -303,11 +332,12 @@ def main():
 			default=None,
 			help="write to FILENAME instead of stdout")
 	parser.add_option("-p", "--port",
-			action="store",
+			action="append",
 			metavar="PORT",
 			type="int",
-			default=22,
-			help="use PORT for scanning")
+			dest="port",
+			default=[22],
+			help="use PORT for scanning.  Can be used multiple times to scan more ports.")
 	parser.add_option("-v", "--version",
 			action="store_true",
 			dest="version",
@@ -334,7 +364,13 @@ def main():
 			dest="nameserver",
 			default="",
 			help="nameserver to use for AXFR (only valid with -s -a)")
-	parser.add_option("-H", "--hashfunction", 
+	parser.add_option("-r", "--regex",
+			action="store",
+			type="string",
+			dest="regex",
+			default=None,
+			help="Regex of hosts to be included. E.g. -r '^(ht|aws).*'")
+	parser.add_option("-H", "--hashfunction",
 			action="append",
 			type="choice",
 			dest="fphashes",
@@ -353,24 +389,27 @@ def main():
 	data = ""
 	trailing = options.trailing_dot
 	timeout = options.timeout
-	algos = options.algo or ["dsa", "rsa", "ecdsa", "ed25519"]
-	all_hosts = options.all_hosts
-	port = options.port
+	if options.regex: regexfilter = re.compile(options.regex, re.IGNORECASE)
+	else: regexfilter = None
 	fphashes = options.fphashes or ["sha1", "sha2"]
 	hostnames = ()
 
 	if options.version:
 		show_version()
 		sys.exit(0)
-	if not quiet and port != 22:
+
+	if not quiet and 22 not in port:
 		print >> sys.stderr, "WARNING: non-standard port numbers are not designated in SSHFP records"
+
 	if not quiet and options.known_hosts and options.scan:
 		print >> sys.stderr, "WARNING: Ignoring -k option, -s was passed"
 	if options.nameserver and not options.scan and not options.all_hosts:
 		print >> sys.stderr, "ERROR: Cannot specify -n without -s and -a"
 		sys.exit(1)
+
 	if not options.scan and options.all_hosts and args:
 		print >> sys.stderr, "WARNING: -a and hosts both passed, ignoring manual host list"
+
 	if not args and (not all_hosts):
 		print >> sys.stderr, "WARNING: Assuming -a"
 		all_hosts = True
@@ -380,18 +419,26 @@ def main():
 
 	if options.scan and options.all_hosts:
 		datal = []
+
 		for arg in args:
 			datal.append(sshfp_from_axfr(arg, options.nameserver))
+
+		datal = sort_uniq(datal)
+
 		if not quiet:
 			datal.insert(0, ";")
 			datal.insert(0, "; Generated by sshfp %s from %s at %s" % (VERSION, nameserver, time.ctime()))
 			datal.insert(0, ";")
+
 		data = "\n".join(datal)
+
 	elif options.scan:	# Scan specified hosts
 		if not args:
 			print >> sys.stderr, "ERROR: You asked me to scan, but didn't give any hosts to scan"
 			sys.exit(1)
+
 		data = sshfp_from_dns(args)
+
 	else: # known_hosts
 		data = sshfp_from_file(khfile, args)
 
