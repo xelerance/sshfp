@@ -57,6 +57,8 @@ def create_sshfp(hostname, keytype, keyblob, fphash):
 		keytype = "2"
 	elif  keytype == "ecdsa-sha2-nistp256":
 		keytype = "3"
+	elif  keytype == "ssh-ed25519":
+		keytype = "4"
 	else:
 		return ""
 	try:
@@ -323,9 +325,9 @@ def main():
 			action="append",
 			type="choice",
 			dest="algo",
-			choices=["rsa", "dsa", "ecdsa"],
+			choices=["rsa", "dsa", "ecdsa", "ed25519"],
 			default=[],
-			help="key type to fetch (may be specified more than once, default dsa,rsa)")
+			help="key type to fetch (may be specified more than once, default dsa,rsa,ecdsa,ed25519)")
 	parser.add_option("-n", "--nameserver",
 			action="store",
 			type="string",
@@ -351,7 +353,7 @@ def main():
 	data = ""
 	trailing = options.trailing_dot
 	timeout = options.timeout
-	algos = options.algo or ["dsa", "rsa", "ecdsa"]
+	algos = options.algo or ["dsa", "rsa", "ecdsa", "ed25519"]
 	all_hosts = options.all_hosts
 	port = options.port
 	fphashes = options.fphashes or ["sha1", "sha2"]
